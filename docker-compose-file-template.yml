@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+
+    postgres:
+        image: postgres:13.3
+        container_name: postgres
+        ports:
+            - "5432:5432"
+        env_file:
+            - ./backend/.env
+        volumes:
+            - postgres-db:/var/lib/postgresql/data
+        networks:
+            - stadium-matching-network
+
+    backend:
+        container_name: "fastapi"
+        image: stadium_matching_backend:latest
+        build:
+            context: ./backend
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./backend:/backend
+        restart: always
+        environment:
+           - pass
+        tty: true
+        depends_on:
+            - postgres
+        networks:
+            - stadium-matching-network
+
+volumes:
+    postgres-db:
+networks:
+    stadium-matching-network:
+        driver: bridge

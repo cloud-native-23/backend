@@ -1,0 +1,89 @@
+version: "3.9"
+
+services:
+
+    # elasticsearch:
+    #     image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    #     ports:
+    #         - "9200:9200"
+    #     volumes:
+    #         - elasticsearch
+    rabbitmq-container:
+        image: rabbitmq:3-management
+        hostname: rabbitmq-container
+        volumes:
+            - ./rabbitmq:/rabbitmq
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        networks:
+            - teamatch-network
+
+    postgres:
+        image: postgres:13.3
+        container_name: postgres
+        ports:
+            - "5432:5432"
+        env_file:
+            - .env
+        volumes:
+            - postgres-db:/var/lib/postgresql/data
+        networks:
+            - teamatch-network
+
+    backend:
+        container_name: "fastapi"
+        image: teamatch_backend:latest
+        build:
+            context: ./
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./:/backend
+        restart: always
+        environment:
+            - WATCHFILES_FORCE_POLLING=true
+            - GUNICORN_WORKERS=1
+            - JSON_LOGS=0
+            - LOG_LEVEL=DEBUG
+        tty: true
+        depends_on:
+            - postgres
+        networks:
+            - teamatch-network
+
+    matching:
+        container_name: matching
+        build:
+            context: ./microservices/matching
+        ports:
+            - "8001:8001"
+        volumes:
+            - ./:/backend
+        restart: always
+        tty: true
+        depends_on:
+            - postgres
+        networks:
+            - teamatch-network
+
+    swipecard:
+        container_name: swipecard
+        build:
+            context: ./microservices/swipecard
+        ports:
+            - "8002:8002"
+        volumes:
+            - ./:/backend
+        restart: always
+        tty: true
+        depends_on:
+            - postgres
+        networks:
+            - teamatch-network
+volumes:
+    postgres-db:
+networks:
+    teamatch-network:
+        driver: bridge
+
