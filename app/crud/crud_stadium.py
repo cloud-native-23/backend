@@ -22,7 +22,7 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
         )
     
 
-    def create(self, db: Session, *, obj_in: StadiumCourtCreate) -> Stadium:
+    def create(self, db: Session, *, obj_in: StadiumCreate) -> Stadium:
 
         #TBC get_by_user_uuid name?
         user_in = crud.user.get_by_user_uuid(

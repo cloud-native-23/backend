@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
-from .stadium import UserBase
+from .user import UserBase
 
 # Shared properties
 class StadiumBase(BaseModel):

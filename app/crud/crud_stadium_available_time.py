@@ -7,11 +7,12 @@ from app.crud.base import CRUDBase
 
 from app.models.stadium_available_time import StadiumAvailableTime
 from app.schemas.stadium_available_time import (
-    StadiumAvailableTimeCreate
+    StadiumAvailableTimeCreate,
+    StadiumAvailableTimeUpdate
 )
 
 
-class CRUDStadiumAvailableTime (CRUDBase[StadiumAvailableTime, StadiumAvailableTimeCreate]):
+class CRUDStadiumAvailableTime (CRUDBase[StadiumAvailableTime, StadiumAvailableTimeCreate, StadiumAvailableTimeUpdate]):
     
     def get_all_by_stadium_id(
         self, db: Session, *, stadium_id: int
