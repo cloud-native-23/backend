@@ -11,20 +11,18 @@ from pydantic import BaseModel, EmailStr
 # Shared properties
 class UserBase(BaseModel):
     email: Optional[EmailStr] = None
-    is_admin: bool = False
+    is_provider: bool = False
     name: Optional[str] = "--"
 
 
 class UserUpdateNoEmail(BaseModel):
     name: Optional[str] = "--"
-    line_id: Optional[str] = None
     image: Optional[str] = None
 
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     password: str = None
-    line_id: Optional[str] = None
     image: Optional[str] = None
     is_google_sso: Optional[bool] = False
 
