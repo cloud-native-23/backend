@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, ForeignKey
+from sqlalchemy import Column, Date, Integer, ForeignKey
 from sqlalchemy.sql import func
 from app.database.base_class import Base
 
@@ -11,6 +11,6 @@ class StadiumCourtDisable(Base):
         ForeignKey("StadiumCourt.id", ondelete="CASCADE"),
         nullable=False
     )
-    datetime = Column(DateTime(timezone=True))
+    date = Column(Date, nullable=False)
     start_time = Column(Integer, nullable=False)
     end_time = Column(Integer, nullable=False)
