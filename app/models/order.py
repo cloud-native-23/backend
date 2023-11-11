@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, Integer, ForeignKey
+from sqlalchemy import Boolean, Column, Date, DateTime, Integer, ForeignKey
 from sqlalchemy.sql import func
 from app.database.base_class import Base
 
@@ -15,7 +15,7 @@ class Order(Base):
         Integer,
         ForeignKey("User.id", ondelete="CASCADE")
     )
-    datetime = Column(DateTime(timezone=True))
+    date = Column(Date, nullable=False)
     start_time = Column(Integer, nullable=False)
     end_time = Column(Integer, nullable=False)
     status = Column(Integer, nullable=False)
