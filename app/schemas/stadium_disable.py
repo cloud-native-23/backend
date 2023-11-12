@@ -6,22 +6,21 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
-from .stadium_court import StadiumCourtBase
+from .stadium import StadiumBase
 
 # Shared properties
-class StadiumCourtDisableBase(BaseModel):
-    stadium_court_disable_id: int
-    stadium_court: StadiumCourtBase
+class StadiumDisableBase(BaseModel):
+    stadium: StadiumBase
 
 # Properties to receive via API on creation
 
-class StadiumCourtDisableCreate(StadiumCourtDisableBase):
+class StadiumDisableCreate(StadiumDisableBase):
     datetime: datetime
     start_time: int
     end_time: int
 
 # Properties to receive via API on update
-class StadiumCourtDisableUpdate(StadiumCourtDisableBase):
+class StadiumDisableUpdate(StadiumDisableBase):
     datetime: datetime
     start_time: int
     end_time: int
