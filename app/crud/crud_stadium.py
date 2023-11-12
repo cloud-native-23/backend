@@ -12,7 +12,6 @@ from app.schemas.stadium import (
 )
 
 
-
 class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
     # TODO: separate each function or one function with dynamic filter?
     def get_by_stadium_id(
