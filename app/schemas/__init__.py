@@ -24,8 +24,8 @@ from .stadium_available_time import (
     StadiumAvailableTimeCreate,
     StadiumAvailableTimeUpdate
 )
-from .stadium_court_disable import (
-    StadiumCourtDisableBase,
-    StadiumCourtDisableCreate,
-    StadiumCourtDisableUpdate
+from .stadium_disable import (
+    StadiumDisableBase,
+    StadiumDisableCreate,
+    StadiumDisableUpdate
 )

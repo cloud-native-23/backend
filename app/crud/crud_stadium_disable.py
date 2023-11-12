@@ -5,25 +5,25 @@ from sqlalchemy.orm import Session
 from app import crud
 from app.crud.base import CRUDBase
 
-from app.models.stadium_court_disable import StadiumCourtDisable
-from app.schemas.stadium_court_disable import (
-    StadiumCourtDisableCreate,
-    StadiumCourtDisableUpdate
+from app.models.stadium_disable import StadiumDisable
+from app.schemas.stadium_disable import (
+    StadiumDisableCreate,
+    StadiumDisableUpdate
 )
 
 
-class CRUDStadiumCourtDisable(CRUDBase[StadiumCourtDisable, StadiumCourtDisableCreate, StadiumCourtDisableUpdate]):
+class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumDisableUpdate]):
     
     def get_all_by_stadium_court_id(
         self, db: Session, *, stadium_court_id: int
-    ) -> Optional[StadiumCourtDisable]:
+    ) -> Optional[StadiumDisable]:
         return (
-            db.query(StadiumCourtDisable).filter(StadiumCourtDisable.id == stadium_court_id).all()
+            db.query(StadiumDisable).filter(StadiumDisable.id == stadium_court_id).all()
         )
 
     
-    def create(self, db: Session, *, obj_in: StadiumCourtDisableCreate) -> StadiumCourtDisable:
-        db_obj = StadiumCourtDisable(
+    def create(self, db: Session, *, obj_in: StadiumDisableCreate) -> StadiumDisable:
+        db_obj = StadiumDisable(
             stadium_court_id=obj_in.stadium_court_id,
             datetime=obj_in.datetime,
             start_time=obj_in.start_time,
@@ -44,4 +44,4 @@ class CRUDStadiumCourtDisable(CRUDBase[StadiumCourtDisable, StadiumCourtDisableC
             db.commit()
         return True
     
-stadium_court_disable = StadiumCourtDisable()
+stadium_disable = StadiumDisable()
