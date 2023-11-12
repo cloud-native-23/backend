@@ -1,5 +1,5 @@
 from typing import Any, Dict, Optional, Union
-from uuid import UUID
+# from uuid import UUID
 
 from sqlalchemy.orm import Session
 
@@ -13,10 +13,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
         return db.query(User).filter(User.email == email).first()
 
-    def get_by_user_uuid(self, db: Session, *, user_uuid: UUID) -> Optional[User]:
+    def get_by_user_uuid(self, db: Session, *, user_uuid: int) -> Optional[User]:
         return db.query(User).filter(User.user_uuid == user_uuid).first()
 
-    def get_by_uuid(self, db: Session, *, uuid: UUID) -> Optional[User]:
+    def get_by_uuid(self, db: Session, *, uuid: int) -> Optional[User]:
         return db.query(User).filter(User.user_uuid == uuid).first()
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
@@ -27,7 +27,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             password=obj_in.password,
             name=obj_in.name,
             image=obj_in.image,
-            is_admin=obj_in.is_admin,
+            is_provider=obj_in.is_provider,
             is_google_sso=obj_in.is_google_sso,
         )
         db.add(db_obj)
@@ -60,8 +60,8 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def is_active(self, user: User) -> bool:
         return user.is_active
 
-    def is_admin(self, user: User) -> bool:
-        return user.is_admin
+    def is_provider(self, user: User) -> bool:
+        return user.is_provider
 
 
 user = CRUDUser(User)
