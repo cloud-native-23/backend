@@ -3,12 +3,12 @@ from sqlalchemy.sql import func
 from app.database.base_class import Base
 
 
-class StadiumCourtDisable(Base):
-    __tablename__ = "StadiumCourtDisable"
+class StadiumDisable(Base):
+    __tablename__ = "StadiumDisable"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    stadium_court_id = Column(
+    stadium_id = Column(
         Integer,
-        ForeignKey("StadiumCourt.id", ondelete="CASCADE"),
+        ForeignKey("Stadium.id", ondelete="CASCADE"),
         nullable=False
     )
     date = Column(Date, nullable=False)
