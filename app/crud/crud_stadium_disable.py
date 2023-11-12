@@ -14,17 +14,17 @@ from app.schemas.stadium_disable import (
 
 class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumDisableUpdate]):
     
-    def get_all_by_stadium_court_id(
-        self, db: Session, *, stadium_court_id: int
+    def get_all_by_stadium_id(
+        self, db: Session, *, stadium_id: int
     ) -> Optional[StadiumDisable]:
         return (
-            db.query(StadiumDisable).filter(StadiumDisable.id == stadium_court_id).all()
+            db.query(StadiumDisable).filter(StadiumDisable.id == stadium_id).all()
         )
 
     
     def create(self, db: Session, *, obj_in: StadiumDisableCreate) -> StadiumDisable:
         db_obj = StadiumDisable(
-            stadium_court_id=obj_in.stadium_court_id,
+            stadium_id=obj_in.stadium_id,
             datetime=obj_in.datetime,
             start_time=obj_in.start_time,
             end_time=obj_in.end_time
@@ -35,10 +35,10 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
         return db_obj
 
     
-    def delete_by_stadium_court_id(self, db: Session, *, stadium_court_id: str):
+    def delete_by_stadium_id(self, db: Session, *, stadium_id: str):
         #in update stadium page, if update stadium_court, call this 
-        if stadium_court_id is not None or stadium_court_id != "":
-            db_objs = self.get_all_by_stadium_court_id(stadium_court_id)
+        if stadium_id is not None or stadium_id != "":
+            db_objs = self.get_all_by_stadium_id(stadium_id)
             for db_obj in db_objs:
                 db.delete(db_obj)
             db.commit()
