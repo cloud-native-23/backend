@@ -44,5 +44,19 @@ class CRUDStadiumAvailableTime (CRUDBase[StadiumAvailableTime, StadiumAvailableT
             db.commit()
         return True
     
+    def get_available_times(
+        self, db: Session, *,stadium_id: int
+    ):
+        """
+        Get available time slots for a stadium on a given weekday.
+        """
+        available_times = (
+            db.query(StadiumAvailableTime.start_time, StadiumAvailableTime.end_time)
+            .filter(
+                StadiumAvailableTime.stadium_id == stadium_id
+            )
+            .first()
+        )
+        return available_times
     
 stadium_available_time = CRUDStadiumAvailableTime(StadiumAvailableTime)

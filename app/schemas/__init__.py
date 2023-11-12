@@ -12,7 +12,8 @@ from .user import (
 from .stadium import (
     StadiumBase,
     StadiumCreate,
-    StadiumUpdate
+    StadiumUpdate,
+    StadiumAvailabilityResponse
 )
 from .stadium_court import (
     StadiumCourtBase,
