@@ -10,7 +10,7 @@ from app.schemas.stadium_disable import (
     StadiumDisableCreate,
     StadiumDisableUpdate
 )
-
+from datetime import timedelta, datetime
 
 class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumDisableUpdate]):
     
@@ -44,4 +44,21 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
             db.commit()
         return True
     
-stadium_disable = StadiumDisable()
+    def is_disabled(
+        self, db: Session, *, stadium_id: int, date: datetime, start_time: int, end_time: int
+    ) -> bool:
+        """
+        Check if the stadium is disabled at a specific time.
+        """
+        return (
+            db.query(StadiumDisable)
+            .filter(
+                StadiumDisable.stadium_id == stadium_id,
+                StadiumDisable.date == date,
+                StadiumDisable.start_time <= end_time,
+                StadiumDisable.end_time >= start_time,
+            )
+            .first() is not None
+        )
+    
+stadium_disable = CRUDStadiumDisable(StadiumDisable)

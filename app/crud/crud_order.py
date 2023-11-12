@@ -1,12 +1,14 @@
 from typing import Any, Dict, Optional, Union
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.crud.base import CRUDBase
 from app.models.order import Order
+from app.models.stadium_court import StadiumCourt
 from app.schemas.order import OrderCreate, OrderUpdate
 
-
+from datetime import timedelta, datetime
 class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     def get_by_order_id(self, db: Session, *, order_id: int) -> Optional[Order]:
         return db.query(Order).filter(Order.order_id == order_id).first()
@@ -41,6 +43,36 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         else:
             update_data = obj_in.dict(exclude_unset=True)
         return super().update(db, db_obj=db_obj, obj_in=update_data)
+    
+    def is_booked(
+        self, db: Session, *,  stadium_id: int, date: datetime, start_time: int, end_time: int
+    ) -> bool:
+        """
+        Check if the court is booked at a specific time.
+        """
+        court_ids_subquery = (
+            db.query(StadiumCourt.id)
+            .filter(StadiumCourt.stadium_id == stadium_id)
+            .all()
+        )
+        #print(court_ids_subquery,'court_ids_subquery')
+        court_ids = [court_id for (court_id,) in court_ids_subquery]
+        available_court_count = (
+            db.query(func.count(Order.stadium_court_id))
+            .filter(
+                Order.stadium_court_id.in_(court_ids),
+                Order.date == date,
+                Order.start_time == start_time,
+                Order.end_time == end_time,
+                Order.status == 1,
+            )
+            .scalar()
+        )
+        print('available_court_count',available_court_count)
+        if available_court_count == len(court_ids):
+            return True
+        else:
+            return False
 
 
-user = CRUDOrder(Order)
+order = CRUDOrder(Order)

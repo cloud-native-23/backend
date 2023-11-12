@@ -11,6 +11,8 @@ from app.schemas.stadium import (
     StadiumUpdate
 )
 
+from datetime import timedelta, datetime
+
 
 class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
     # TODO: separate each function or one function with dynamic filter?
