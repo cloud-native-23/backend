@@ -28,6 +28,5 @@ from .stadium_available_time import (
 from .stadium_disable import (
     StadiumDisableBase,
     StadiumDisableCreate,
-    StadiumDisableUpdate,
-    
+    StadiumDisableUpdate
 )

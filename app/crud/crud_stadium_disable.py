@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional, Union
 
 from sqlalchemy.orm import Session
+from datetime import timedelta, datetime
 
 from app import crud
 from app.crud.base import CRUDBase
@@ -10,7 +11,7 @@ from app.schemas.stadium_disable import (
     StadiumDisableCreate,
     StadiumDisableUpdate
 )
-from datetime import timedelta, datetime
+
 
 class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumDisableUpdate]):
     

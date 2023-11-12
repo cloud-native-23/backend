@@ -27,13 +27,9 @@ def get_stadium_availability(
         stadium = crud.stadium.get_by_stadium_id(db=db, stadium_id=stadium_id)
         if not stadium:
             raise HTTPException(status_code=404, detail="Stadium not found")
-        #print('stadium',vars(stadium))
 
         # Convert query_date to datetime
-        #query_date = datetime.strptime(query_date, "%Y%m%d").strftime("%Y-%m-%d")
         query_date = datetime.strptime(query_date, "%Y-%m-%d")
-        #print('query_date',query_date,type(query_date))
-
 
         # Initialize the response data structure
         response_data = {
@@ -52,12 +48,10 @@ def get_stadium_availability(
             availability_data = {"day_{}".format(i + 1): []}
 
             # Iterate over the available time slots in a day
-            for start_time in range(available_times.start_time, available_times.end_time):
-                
+            for start_time in range(available_times.start_time, available_times.end_time):   
                 end_time = start_time + 1
 
                 #先看這個時段有沒有被disable
-
                 # Check if the stadium is disabled at this time
                 is_disabled = crud.stadium_disable.is_disabled(
                     db=db, stadium_id=stadium_id, date=current_date, start_time=start_time, end_time=end_time

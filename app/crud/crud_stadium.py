@@ -11,7 +11,6 @@ from app.schemas.stadium import (
     StadiumUpdate
 )
 
-from datetime import timedelta, datetime
 
 
 class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
