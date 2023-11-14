@@ -29,9 +29,9 @@ class CRUDStadiumCourt(CRUDBase[StadiumCourt, StadiumCourtCreate, StadiumCourtUp
         )
 
     
-    def create(self, db: Session, *, obj_in: StadiumCourtCreate) -> StadiumCourt:
+    def create(self, db: Session, *, obj_in: StadiumCourtCreate, stadium_id: int) -> StadiumCourt:
         db_obj = StadiumCourt(
-            stadium_id=obj_in.stadium_id,
+            stadium_id=stadium_id,
             name=obj_in.name,
             max_number_of_people=obj_in.max_number_of_people
         )

@@ -79,3 +79,37 @@ def get_stadium_availability(
         print('Error:', e)
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.post("/create", response_model=schemas.stadium_court.StadiumCourtCreateWithMessage)
+def create_stadium(
+    *,
+    db: Session = Depends(deps.get_db),
+    stadium_court_in: schemas.StadiumCourtCreateList,
+    # TODO: wait for user validation
+    # current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Create new stadium.
+    """ 
+    try:
+
+        # Create Stadium
+        stadium = crud.stadium.create(db=db, obj_in=stadium_court_in.stadium)
+
+        # Create StadiumCourts
+        stadium_courts = []
+        for stadium_court_data in stadium_court_in.data:
+            # Associate with the created stadium
+            stadium_court = crud.stadium_court.create(db=db, obj_in=stadium_court_data, stadium_id=stadium.id)
+            stadium_courts.append(stadium_court)
+
+        # Adjust the response to include both stadium and stadium courts
+        return {"message": "success", "stadium": stadium_court_in.stadium, "stadium_courts": [court for court in stadium_court_in.data]}
+
+    except Exception as e:
+        print('Error:', e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+

@@ -6,6 +6,7 @@ from app import crud
 from app.crud.base import CRUDBase
 
 from app.models.stadium import Stadium
+from app.models.user import User
 from app.schemas.stadium import (
     StadiumCreate,
     StadiumUpdate
@@ -21,20 +22,22 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
             db.query(Stadium).filter(Stadium.id == stadium_id).first()
         )
     
-
+    # TODO: wait for user validation
+    # def create(self, db: Session, *, obj_in: StadiumCreate, current_user: User) -> Stadium:
     def create(self, db: Session, *, obj_in: StadiumCreate) -> Stadium:
 
         #TBC get_by_user_uuid name?
-        user_in = crud.user.get_by_user_uuid(
-            db=db, room_id=obj_in.created_user.id
-        )
+        # user_in = crud.user.get_by_user_uuid(
+        #     db=db, room_id=obj_in.created_user.id
+        # )
         db_obj = Stadium(
             name=obj_in.name,
             address=obj_in.address,
             picture=obj_in.picture,
             area=obj_in.area,
             description=obj_in.description,
-            created_user = user_in.id
+            # created_user = user_in.id
+            created_user = obj_in.created_user
         )
         db.add(db_obj)
         db.commit()
