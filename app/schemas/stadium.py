@@ -55,9 +55,16 @@ class StadiumInDBBase(StadiumBase):
 class Stadium(StadiumInDBBase):
     pass
 
+
+class StadiumList(StadiumBase):
+    name: str
+    picture: Optional[str] = None
+    area: Optional[float] = None
+
+
 class StadiumListMessage(BaseModel):
     message: str
-    stadium: List[Stadium]
+    stadium: Optional[List[StadiumList]] = None
 
 # Additional properties stored in DB
 
