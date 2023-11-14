@@ -55,6 +55,9 @@ class StadiumInDBBase(StadiumBase):
 class Stadium(StadiumInDBBase):
     pass
 
+class StadiumListMessage(BaseModel):
+    message: str
+    stadium: List[Stadium]
 
 # Additional properties stored in DB
 

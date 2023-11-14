@@ -112,3 +112,25 @@ def create_stadium(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
+def get_stadium_list_with_created_user(
+    created_user: int,
+    is_query_with_created_user: bool,
+    db: Session = Depends(deps.get_db),
+    # TODO: wait for user validation
+    # current_user: models.User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Retrieve user's matching rooms with their member_id in each matching room.
+    """
+    try:
+        
+        stadiums = crud.stadium.get_stadium_list(
+        db=db, user_id=created_user, is_query_with_created_user=is_query_with_created_user
+        )
+        return {"message": "success", "stadium": stadiums}
+    
+    except Exception as e:
+        print('Error:', e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
