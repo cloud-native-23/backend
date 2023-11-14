@@ -11,8 +11,7 @@ from .user import UserBase
 # Shared properties
 class StadiumBase(BaseModel):
     #auto increment doesn't need id
-    # stadium_id: int
-    pass
+    stadium_id: Optional[int] = None
 
 # Properties to receive via API on creation
 class StadiumCreate(StadiumBase): 
@@ -25,7 +24,6 @@ class StadiumCreate(StadiumBase):
 
 # Properties to receive via API on update
 class StadiumUpdate(StadiumBase):
-    stadium_id: int
     name: str
     address: Optional[str] = None
     picture: Optional[str] = None
@@ -33,8 +31,7 @@ class StadiumUpdate(StadiumBase):
     description: Optional[str] = None
 
 # Additional properties to return via API
-class StadiumAvailabilityResponse(StadiumBase):
-    stadium_id: int 
+class StadiumAvailabilityResponse(StadiumBase): 
     query_date: datetime
     message: str
     data: Any
@@ -60,6 +57,4 @@ class Stadium(StadiumInDBBase):
 
 
 # Additional properties stored in DB
-class StadiumWithMessage(BaseModel):
-    message: str
-    data: Optional[Stadium] = None
+

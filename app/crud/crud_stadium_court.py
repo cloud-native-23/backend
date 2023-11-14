@@ -7,12 +7,13 @@ from app.crud.base import CRUDBase
 
 from app.models.stadium_court import StadiumCourt
 from app.schemas.stadium_court import (
+    StadiumCourtCreateList,
     StadiumCourtCreate,
     StadiumCourtUpdate
 )
 
 
-class CRUDStadiumCourt(CRUDBase[StadiumCourt, StadiumCourtCreate, StadiumCourtUpdate]):
+class CRUDStadiumCourt(CRUDBase[StadiumCourt, StadiumCourtCreateList, StadiumCourtUpdate]):
     # TODO: separate each function or one function with dynamic filter?
     def get_by_stadium_court_id(
         self, db: Session, *, stadium_court_id: int
@@ -29,9 +30,9 @@ class CRUDStadiumCourt(CRUDBase[StadiumCourt, StadiumCourtCreate, StadiumCourtUp
         )
 
     
-    def create(self, db: Session, *, obj_in: StadiumCourtCreate) -> StadiumCourt:
+    def create(self, db: Session, *, obj_in: StadiumCourtCreate, stadium_id: int) -> StadiumCourt:
         db_obj = StadiumCourt(
-            stadium_id=obj_in.stadium_id,
+            stadium_id=stadium_id,
             name=obj_in.name,
             max_number_of_people=obj_in.max_number_of_people
         )
