@@ -41,4 +41,4 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamUpdate]):
         return True
 
 
-user = CRUDTeam(Team)
+team = CRUDTeam(Team)
