@@ -7,13 +7,12 @@ from app.crud.base import CRUDBase
 
 from app.models.stadium_court import StadiumCourt
 from app.schemas.stadium_court import (
-    StadiumCourtCreateList,
     StadiumCourtCreate,
     StadiumCourtUpdate
 )
 
 
-class CRUDStadiumCourt(CRUDBase[StadiumCourt, StadiumCourtCreate, StadiumCourtCreateList, StadiumCourtUpdate]):
+class CRUDStadiumCourt(CRUDBase[StadiumCourt, StadiumCourtCreate, StadiumCourtUpdate]):
     # TODO: separate each function or one function with dynamic filter?
     def get_by_stadium_court_id(
         self, db: Session, *, stadium_court_id: int
