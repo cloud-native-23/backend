@@ -112,7 +112,7 @@ def create_stadium(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
+@router.post("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
 def get_stadium_list_with_created_user(
     created_user: int,
     is_query_with_created_user: bool,
