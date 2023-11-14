@@ -45,8 +45,7 @@ def get_stadium_availability(
         # Iterate over the next 7 days
         for i in range(7):
             current_date = query_date + timedelta(days=i)
-            availability_data = {"day_{}".format(i + 1): []}
-
+            availability_data = {"day_{}".format(i + 1): {}}
             # Iterate over the available time slots in a day
             for start_time in range(available_times.start_time, available_times.end_time):   
                 end_time = start_time + 1
@@ -58,7 +57,7 @@ def get_stadium_availability(
                 )
 
                 if is_disabled:
-                    availability_data["day_{}".format(i + 1)].append("{}:{}".format(start_time, "Disabled"))
+                    availability_data["day_{}".format(i + 1)][str(start_time)] = "Disabled"
                 else:
                     # Check if the court is booked at this time
                     # 看該時段之下，該stadium之下的所有stadium court是否被借走
@@ -68,9 +67,9 @@ def get_stadium_availability(
                     )
 
                     if is_booked:
-                        availability_data["day_{}".format(i + 1)].append("{}:{}".format(start_time, "Booked"))
+                        availability_data["day_{}".format(i + 1)][str(start_time)] = "Booked"
                     else:
-                        availability_data["day_{}".format(i + 1)].append("{}:{}".format(start_time, "Available"))
+                        availability_data["day_{}".format(i + 1)][str(start_time)] = "Available"
             response_data["data"].append(availability_data)
 
         return response_data
