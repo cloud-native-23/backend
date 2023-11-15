@@ -5,13 +5,16 @@ while BaseModel.schema_json will return a JSON string representation of that dic
 
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .order import OrderBase
 
 # Shared properties
 class TeamBase(BaseModel):
-    team_id: int
+    team_id: int = Field(alias='id')
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 # Properties to receive via API on creation

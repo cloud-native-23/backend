@@ -15,7 +15,9 @@ from .stadium import (
     StadiumUpdate,
     StadiumAvailabilityResponse,
     Stadium,
-    StadiumInDBBase
+    StadiumInDBBase,
+    StadiumInfo,
+    StadiumInfoMessage
 )
 from .stadium_court import (
     StadiumCourtBase,
