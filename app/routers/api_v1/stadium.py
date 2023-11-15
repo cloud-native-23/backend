@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Optional
 from datetime import timedelta, datetime
 
 import requests
@@ -114,8 +114,7 @@ def create_stadium(
 
 @router.post("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
 def get_stadium_list_with_created_user(
-    created_user: int,
-    is_query_with_created_user: bool,
+    created_user: Optional[int] = None,
     db: Session = Depends(deps.get_db),
     # TODO: wait for user validation
     # current_user: models.User = Depends(deps.get_current_active_user)
@@ -126,7 +125,7 @@ def get_stadium_list_with_created_user(
     try:
         
         stadiums = crud.stadium.get_stadium_list(
-        db=db, user_id=created_user, is_query_with_created_user=is_query_with_created_user
+        db=db, user_id=created_user
         )
         print("==================",stadiums)
         stadiums_data = [

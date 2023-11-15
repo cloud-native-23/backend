@@ -28,13 +28,12 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
             db: Session, 
             *, 
             user_id: int,
-            is_query_with_created_user: bool = True
     ) -> Optional[List[StadiumList]]:
         selected_columns = (Stadium.id ,Stadium.name, Stadium.picture, Stadium.area)
         # return all stadium
         stadiums_query = db.query(*selected_columns)
         #filter by created user
-        if is_query_with_created_user:
+        if user_id:
             stadiums_query = stadiums_query.filter(Stadium.created_user == user_id)
 
         stadiums = stadiums_query.all()
