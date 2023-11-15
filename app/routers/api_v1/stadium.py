@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Optional
 from datetime import timedelta, datetime
 
 import requests
@@ -89,7 +89,7 @@ def create_stadium(
     # current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Create new stadium.
+    Create new stadium and stadium courts.
     """ 
     try:
 
@@ -112,3 +112,29 @@ def create_stadium(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
+def get_stadium_list_with_created_user(
+    created_user: Optional[int] = None,
+    db: Session = Depends(deps.get_db),
+    # TODO: wait for user validation
+    # current_user: models.User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Retrieve stadium list w/ or w/o created_user.
+    """
+    try:
+        
+        stadiums = crud.stadium.get_stadium_list(
+        db=db, user_id=created_user
+        )
+
+        stadiums_data = [
+            {'stadium_id': stadium_id, 'name': name, 'picture': picture, 'area': area}
+            for stadium_id, name, picture, area in stadiums
+        ]
+        return {"message": "success", "stadium": stadiums_data}
+    
+    except Exception as e:
+        print('Error:', e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

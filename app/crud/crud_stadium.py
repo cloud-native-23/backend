@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 
 from sqlalchemy.orm import Session
 
@@ -9,7 +9,8 @@ from app.models.stadium import Stadium
 from app.models.user import User
 from app.schemas.stadium import (
     StadiumCreate,
-    StadiumUpdate
+    StadiumUpdate,
+    StadiumList
 )
 
 
@@ -21,6 +22,23 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
         return (
             db.query(Stadium).filter(Stadium.id == stadium_id).first()
         )
+    
+    def get_stadium_list(
+            self, 
+            db: Session, 
+            *, 
+            user_id: int,
+    ) -> Optional[List[StadiumList]]:
+        selected_columns = (Stadium.id ,Stadium.name, Stadium.picture, Stadium.area)
+        # return all stadium
+        stadiums_query = db.query(*selected_columns)
+        #filter by created user
+        if user_id:
+            stadiums_query = stadiums_query.filter(Stadium.created_user == user_id)
+
+        stadiums = stadiums_query.all()
+        
+        return stadiums
     
     # TODO: wait for user validation
     # def create(self, db: Session, *, obj_in: StadiumCreate, current_user: User) -> Stadium:
