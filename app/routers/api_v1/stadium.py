@@ -127,7 +127,7 @@ def get_stadium_list_with_created_user(
         stadiums = crud.stadium.get_stadium_list(
         db=db, user_id=created_user
         )
-        print("==================",stadiums)
+
         stadiums_data = [
             {'stadium_id': stadium_id, 'name': name, 'picture': picture, 'area': area}
             for stadium_id, name, picture, area in stadiums
