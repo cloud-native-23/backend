@@ -5,13 +5,16 @@ while BaseModel.schema_json will return a JSON string representation of that dic
 from datetime import datetime
 from typing import List, Optional, Dict, Union, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from .user import UserBase
 
 # Shared properties
 class StadiumBase(BaseModel):
     #auto increment doesn't need id
-    stadium_id: Optional[int] = None
+    stadium_id: Optional[int] = Field(alias='id') # None
+
+    class Config:
+        allow_population_by_field_name = True
 
 # Properties to receive via API on creation
 class StadiumCreate(StadiumBase): 
@@ -65,6 +68,10 @@ class StadiumList(StadiumBase):
 class StadiumListMessage(BaseModel):
     message: str
     stadium: Optional[List[StadiumList]] = None
+
+class StadiumInfoMessage(BaseModel):
+    message: str
+    data: Optional[Stadium]
 
 # Additional properties stored in DB
 

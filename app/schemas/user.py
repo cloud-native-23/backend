@@ -5,15 +5,18 @@ while BaseModel.schema_json will return a JSON string representation of that dic
 
 from typing import List, Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 # Shared properties
 class UserBase(BaseModel):
-    user_id: int
+    user_id: int = Field(alias='id')
     email: Optional[EmailStr] = None
     is_provider: bool = False
     name: Optional[str] = "--"
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 class UserUpdateNoEmail(BaseModel):
