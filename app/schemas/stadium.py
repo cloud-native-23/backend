@@ -69,9 +69,13 @@ class StadiumListMessage(BaseModel):
     message: str
     stadium: Optional[List[StadiumList]] = None
 
+class StadiumInfo(Stadium):
+    max_number_of_people: Optional[int]
+    number_of_court: int
+
 class StadiumInfoMessage(BaseModel):
     message: str
-    data: Optional[Stadium]
+    data: Optional[StadiumInfo]
 
 # Additional properties stored in DB
 

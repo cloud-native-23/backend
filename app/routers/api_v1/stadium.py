@@ -138,3 +138,39 @@ def get_stadium_list_with_created_user(
         print('Error:', e)
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/info", response_model=schemas.stadium.StadiumInfoMessage)
+def get_stadium(
+    stadium_id: int,
+    db: Session = Depends(deps.get_db),
+    # TODO: wait for user validation
+    # current_user: models.User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Retrieve stadium info with stadium_id.
+    """
+    if stadium_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Fail to get stadium info. Missing parameter: stadium_id.",
+        )
+    stadium = crud.stadium.get_by_stadium_id(db=db, stadium_id=stadium_id)
+    if stadium is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Fail to get stadium info. No stadium data with stadium_id = {}.".format(stadium_id),
+        )
+    stadium_courts = crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=stadium.id)
+    data = schemas.StadiumInfo(
+        stadium_id = stadium.id,
+        name = stadium.name,
+        address = stadium.address,
+        picture = stadium.picture,
+        area = stadium.area,
+        description = stadium.description,
+        created_user = stadium.created_user,
+        max_number_of_people = stadium_courts[0].max_number_of_people if len(stadium_courts) > 0 else None,
+        number_of_court = len(stadium_courts)
+    )
+
+    return {"message": "success", "data": data}
