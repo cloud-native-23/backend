@@ -89,7 +89,7 @@ def create_stadium(
     # current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Create new stadium.
+    Create new stadium and stadium courts.
     """ 
     try:
 
@@ -120,7 +120,7 @@ def get_stadium_list_with_created_user(
     # current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
     """
-    Retrieve user's matching rooms with their member_id in each matching room.
+    Retrieve stadium list w/ or w/o created_user.
     """
     try:
         
