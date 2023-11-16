@@ -177,3 +177,31 @@ def get_stadium(
     )
 
     return {"message": "success", "data": data}
+
+@router.delete("/delete", response_model=schemas.stadium.StadiumDeleteMessage)
+def delete_stadium(
+    stadium_id: int,
+    db: Session = Depends(deps.get_db),
+    # TODO: wait for user validation
+    # current_user: models.user = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Delete stadium with stadium_id.
+    """
+    if (stadium_id == '' or stadium_id is None):
+        raise HTTPException(
+            status_code=400,
+            detail="Fail to delete stadium. Missing parameter: stadium_id"
+        )
+    stadium = crud.stadium.get_by_stadium_id(
+        db=db, stadium_id=stadium_id)
+    if not stadium:
+        raise HTTPException(
+            status_code=400,
+            detail="No stadium to delete.",
+        )
+    isDeleteSuccessfully = crud.stadium.delete(db=db, db_obj=stadium)
+    if isDeleteSuccessfully:
+        return {'message': 'success', 'data': None}
+    else:
+        return {'message': 'fail', 'data': None}
