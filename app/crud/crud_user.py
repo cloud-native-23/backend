@@ -26,9 +26,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             email=obj_in.email,
             password=obj_in.password,
             name=obj_in.name,
-            image=obj_in.image,
             is_provider=obj_in.is_provider,
-            is_google_sso=obj_in.is_google_sso,
         )
         db.add(db_obj)
         db.commit()

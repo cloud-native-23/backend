@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr
 
 # Shared properties
 class UserBase(BaseModel):
-    user_id: int
+    user_id: Optional[int]
     email: Optional[EmailStr] = None
     is_provider: bool = False
     name: Optional[str] = "--"
@@ -18,14 +18,14 @@ class UserBase(BaseModel):
 
 class UserUpdateNoEmail(BaseModel):
     name: Optional[str] = "--"
-    image: Optional[str] = None
+    picture: Optional[str] = None
 
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     password: str = None
-    image: Optional[str] = None
-    is_google_sso: Optional[bool] = False
+    picture: Optional[str] = None
+    #is_google_sso: Optional[bool] = False
 
 
 # Properties to receive via API on update
@@ -35,7 +35,7 @@ class UserUpdate(UserBase):
 
 class UserInDBBase(UserBase):
     line_id: Optional[str]
-    image: Optional[str]
+    picture: Optional[str]
 
     class Config:
         orm_mode = True
@@ -59,7 +59,8 @@ class UserGetBase(BaseModel):
 
 
 class UserCredential(BaseModel):
-    credential: str
+    name: str
+    email: str
 
 
 class UserMessage(BaseModel):
