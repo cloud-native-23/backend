@@ -178,7 +178,7 @@ def get_stadium(
 
     return {"message": "success", "data": data}
 
-@router.delete("/", response_model=schemas.stadium.StadiumDeleteMessage)
+@router.delete("/delete", response_model=schemas.stadium.StadiumDeleteMessage)
 def delete_stadium(
     stadium_id: int,
     db: Session = Depends(deps.get_db),
