@@ -161,6 +161,8 @@ def get_stadium(
             detail="Fail to get stadium info. No stadium data with stadium_id = {}.".format(stadium_id),
         )
     stadium_courts = crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=stadium.id)
+    stadium_available_times = crud.stadium_available_time.get_all_by_stadium_id(db=db, stadium_id=stadium_id)
+    stadium_available_times_dict = [x.to_dict() for x in stadium_available_times]
     data = schemas.StadiumInfo(
         stadium_id = stadium.id,
         name = stadium.name,
@@ -170,7 +172,8 @@ def get_stadium(
         description = stadium.description,
         created_user = stadium.created_user,
         max_number_of_people = stadium_courts[0].max_number_of_people if len(stadium_courts) > 0 else None,
-        number_of_court = len(stadium_courts)
+        number_of_court = len(stadium_courts),
+        available_times = stadium_available_times_dict
     )
 
     return {"message": "success", "data": data}
