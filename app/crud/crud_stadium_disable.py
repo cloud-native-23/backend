@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional, Union
 
 from sqlalchemy.orm import Session
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 
 from app import crud
 from app.crud.base import CRUDBase
@@ -26,7 +26,7 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
     def create(self, db: Session, *, obj_in: StadiumDisableCreate) -> StadiumDisable:
         db_obj = StadiumDisable(
             stadium_id=obj_in.stadium_id,
-            datetime=obj_in.datetime,
+            date=obj_in.date,
             start_time=obj_in.start_time,
             end_time=obj_in.end_time
         )
@@ -46,7 +46,7 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
         return True
     
     def is_disabled(
-        self, db: Session, *, stadium_id: int, date: datetime, start_time: int, end_time: int
+        self, db: Session, *, stadium_id: int, date: date, start_time: int, end_time: int
     ) -> bool:
         """
         Check if the stadium is disabled at a specific time.
