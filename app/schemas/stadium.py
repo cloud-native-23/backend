@@ -86,5 +86,9 @@ class StadiumInfoMessage(BaseModel):
     message: str
     data: Optional[StadiumInfo]
 
+class StadiumDeleteMessage(BaseModel):
+    message: str
+    data: Optional[Stadium] = None
+
 # Additional properties stored in DB
 
