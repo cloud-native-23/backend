@@ -14,3 +14,6 @@ class StadiumAvailableTime(Base):
     weekday = Column(Integer, nullable=False)
     start_time = Column(Integer, nullable=False)
     end_time = Column(Integer, nullable=False)
+
+    def to_dict(self):
+        return {field.name:getattr(self, field.name) for field in self.__table__.c}
