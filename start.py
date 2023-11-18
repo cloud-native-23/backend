@@ -11,7 +11,7 @@ from app.core.config import settings
 from app.main import app
 from app.utils import number_of_workers
 
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "DEBUG")
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "ERROR")
 JSON_LOGS = os.environ.get("JSON_LOGS", "0") == 1 if settings.ENV else True
 WORKERS = (
     os.environ.get("GUNICORN_WORKERS", 1)

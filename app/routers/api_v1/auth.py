@@ -66,8 +66,7 @@ def google_auth(
             crud.user.create(db, obj_in=user_in)
 
         # 帳號已建立，取得access token
-        user = crud.user.get_by_email(db, email=email)
-        print('user',user)
+        user = crud.user.get_by_email(db, email=email)=
         loguru.logger.info(f"created_user:{jsonable_encoder(user)}")
 
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -104,10 +103,6 @@ def google_auth(
             "access_token": access_token,
             "token_type": "bearer",
         }
-
-        #matching_rooms = crud.matching_room.search_with_user_and_name(db)
-
-        # 回傳 token, user, Matching room list
         return {
             "message": "success",
             "data": {
