@@ -12,5 +12,5 @@ class Team(Base):
         nullable=False
     )
     max_number_of_member = Column(Integer, nullable=False)
-    orig_member_number = Column(Integer, nullable=False)
+    current_member_number = Column(Integer, nullable=False)
     level_requirement = Column(Integer, nullable=False)

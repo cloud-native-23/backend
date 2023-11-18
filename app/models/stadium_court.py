@@ -12,4 +12,3 @@ class StadiumCourt(Base):
         nullable=False
     )
     name = Column(String, nullable=False)
-    max_number_of_people = Column(Integer, nullable=False)
