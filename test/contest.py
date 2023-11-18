@@ -61,7 +61,7 @@ def get_user_authentication_headers(session, email):
     user = jsonable_encoder(user)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
-        user["user_uuid"], expires_delta=access_token_expires
+        user["id"], expires_delta=access_token_expires
     )
     headers = {"Authorization": f"Bearer {access_token}"}
     return headers
