@@ -5,15 +5,18 @@ while BaseModel.schema_json will return a JSON string representation of that dic
 from datetime import datetime
 from typing import List, Optional, Union, Dict
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from .stadium import Stadium, StadiumBase, StadiumCreate
 
 # Shared properties
 class StadiumCourtBase(BaseModel):
     #auto increment doesn't need id
-    stadium_court_id: Optional[int] = None
+    stadium_court_id: Optional[int] = Field(validation_alias='id') # None
     name: str
     max_number_of_people: int
+
+    class Config:
+        allow_population_by_field_name = True
 
 # Properties to receive via API on creation
 class StadiumCourtCreateList(BaseModel):

@@ -11,14 +11,14 @@ class Settings(BaseSettings):
     test_int: int = 50
     POOL_SIZE: int
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
-        "http://localhost/",
-        "http://localhost:4200/",
-        "http://localhost:3000/",
-        "http://localhost:8080/",
-        "https://localhost/",
-        "https://localhost:4200/",
-        "https://localhost:3000/",
-        "https://localhost:8080/",
+        "http://localhost",
+        "http://localhost:4200",
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "https://localhost",
+        "https://localhost:4200",
+        "https://localhost:3000",
+        "https://localhost:8080",
         # "http://backend.sdm-teamatch.com/",
         # "https://stag.sdm-teamatch.com/",
         # "https://sdm-teamatch.com/",

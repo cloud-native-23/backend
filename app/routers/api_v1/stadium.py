@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Optional
 from datetime import timedelta, datetime
 
 import requests
@@ -89,7 +89,7 @@ def create_stadium(
     # current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
-    Create new stadium.
+    Create new stadium and stadium courts.
     """ 
     try:
 
@@ -112,3 +112,130 @@ def create_stadium(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
+def get_stadium_list_with_created_user(
+    created_user: Optional[int] = None,
+    db: Session = Depends(deps.get_db),
+    # TODO: wait for user validation
+    # current_user: models.User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Retrieve stadium list w/ or w/o created_user.
+    """
+    try:
+        
+        stadiums = crud.stadium.get_stadium_list(
+        db=db, user_id=created_user
+        )
+
+        stadiums_data = [
+            {'stadium_id': stadium_id, 'name': name, 'picture': picture, 'area': area}
+            for stadium_id, name, picture, area in stadiums
+        ]
+        return {"message": "success", "stadium": stadiums_data}
+    
+    except Exception as e:
+        print('Error:', e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/info", response_model=schemas.stadium.StadiumInfoMessage)
+def get_stadium(
+    stadium_id: int,
+    db: Session = Depends(deps.get_db),
+    # TODO: wait for user validation
+    # current_user: models.User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Retrieve stadium info with stadium_id.
+    """
+    if stadium_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Fail to get stadium info. Missing parameter: stadium_id.",
+        )
+    stadium = crud.stadium.get_by_stadium_id(db=db, stadium_id=stadium_id)
+    if stadium is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Fail to get stadium info. No stadium data with stadium_id = {}.".format(stadium_id),
+        )
+    stadium_courts = crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=stadium.id)
+    stadium_available_times = crud.stadium_available_time.get_all_by_stadium_id(db=db, stadium_id=stadium_id)
+    stadium_available_times_dict = [x.to_dict() for x in stadium_available_times]
+    data = schemas.StadiumInfo(
+        stadium_id = stadium.id,
+        name = stadium.name,
+        address = stadium.address,
+        picture = stadium.picture,
+        area = stadium.area,
+        description = stadium.description,
+        created_user = stadium.created_user,
+        max_number_of_people = stadium_courts[0].max_number_of_people if len(stadium_courts) > 0 else None,
+        number_of_court = len(stadium_courts),
+        available_times = stadium_available_times_dict
+    )
+
+    return {"message": "success", "data": data}
+
+@router.delete("/delete", response_model=schemas.stadium.StadiumDeleteMessage)
+def delete_stadium(
+    stadium_id: int,
+    db: Session = Depends(deps.get_db),
+    # TODO: wait for user validation
+    # current_user: models.user = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Delete stadium with stadium_id.
+    """
+    if (stadium_id == '' or stadium_id is None):
+        raise HTTPException(
+            status_code=400,
+            detail="Fail to delete stadium. Missing parameter: stadium_id"
+        )
+    stadium = crud.stadium.get_by_stadium_id(
+        db=db, stadium_id=stadium_id)
+    if not stadium:
+        raise HTTPException(
+            status_code=400,
+            detail="No stadium to delete.",
+        )
+    isDeleteSuccessfully = crud.stadium.delete(db=db, db_obj=stadium)
+    if isDeleteSuccessfully:
+        return {'message': 'success', 'data': None}
+    else:
+        return {'message': 'fail', 'data': None}
+
+@router.post("/disable", response_model=schemas.stadium_disable.StadiumDisableResponse)
+def disable_stadium(
+    StadiumDisableCreate_in: schemas.stadium_disable.StadiumDisableCreate,
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Disable stadium with stadium_id.
+    """
+    if (StadiumDisableCreate_in.stadium_id == '' or StadiumDisableCreate_in.stadium_id is None):
+        raise HTTPException(
+            status_code=400,
+            detail="Fail to disable stadium. Missing parameter: stadium_id"
+        )
+    stadium = crud.stadium.get_by_stadium_id(
+        db=db, stadium_id=StadiumDisableCreate_in.stadium_id)
+    if not stadium:
+        raise HTTPException(
+            status_code=400,
+            detail="No stadium to disable.",
+        )
+    stadium_disable = crud.stadium_disable.is_disabled(
+        db=db, stadium_id=StadiumDisableCreate_in.stadium_id, date=StadiumDisableCreate_in.date, start_time=StadiumDisableCreate_in.start_time, end_time=StadiumDisableCreate_in.end_time
+    )
+    if stadium_disable:
+        raise HTTPException(
+            status_code=400,
+            detail="Stadium is already disabled at the time.",
+        )
+    isDisableSuccessfully = crud.stadium_disable.create(db=db, obj_in=StadiumDisableCreate_in)
+    if isDisableSuccessfully:
+        return {'message': 'success', 'data': StadiumDisableCreate_in}
+    else:
+        return {'message': 'fail', 'data': StadiumDisableCreate_in}

@@ -7,24 +7,33 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 from .stadium import StadiumBase
+from datetime import date
 
 # Shared properties
 class StadiumDisableBase(BaseModel):
-    stadium: StadiumBase
+    stadium_id: int
 
 # Properties to receive via API on creation
 
 class StadiumDisableCreate(StadiumDisableBase):
-    datetime: datetime
+    date: date
     start_time: int
     end_time: int
 
 # Properties to receive via API on update
 class StadiumDisableUpdate(StadiumDisableBase):
-    datetime: datetime
+    date: date
     start_time: int
     end_time: int
     
 # Additional properties to return via API
+
+# Disabke return message
+class StadiumDisableResponse(BaseModel):
+    message: str
+    data: Optional[StadiumDisableCreate] = None
+
+    class Config:
+        orm_mode = True
 
 # Additional properties stored in DB

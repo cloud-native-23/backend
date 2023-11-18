@@ -5,13 +5,16 @@ while BaseModel.schema_json will return a JSON string representation of that dic
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from .stadium import StadiumBase
 
 # Shared properties
 class StadiumAvailableTimeBase(BaseModel):
-    stadium_available_id: int
+    stadium_available_id: int = Field(alias='id')
     stadium: StadiumBase
+
+    class Config:
+        allow_population_by_field_name = True
 
 # Properties to receive via API on creation
 
