@@ -12,5 +12,3 @@ class User(Base):
     picture = Column(String, nullable=True)
     is_provider = Column(Boolean, nullable=False, default=False)
     is_active = Column(Boolean, nullable=False, default=True)
-    token1 = Column(String, nullable=True)
-    token2 = Column(String, nullable=True)
