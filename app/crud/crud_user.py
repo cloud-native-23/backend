@@ -13,10 +13,10 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
         return db.query(User).filter(User.email == email).first()
 
-    def get_by_user_uuid(self, db: Session, *, user_id: int) -> Optional[User]:
+    def get_by_user_id(self, db: Session, *, user_id: int) -> Optional[User]:
         return db.query(User).filter(User.id == user_id).first()
 
-    def get_by_uuid(self, db: Session, *, user_id: int) -> Optional[User]:
+    def get_by_id(self, db: Session, *, user_id: int) -> Optional[User]:
         return db.query(User).filter(User.id == user_id).first()
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
@@ -26,9 +26,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             email=obj_in.email,
             password=obj_in.password,
             name=obj_in.name,
-            image=obj_in.image,
             is_provider=obj_in.is_provider,
-            is_google_sso=obj_in.is_google_sso,
         )
         db.add(db_obj)
         db.commit()
@@ -52,9 +50,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         user = self.get_by_email(db, email=email)
         if not user:
             return None
-        if not user.is_google_sso:
-            if not verify_password(password, user.password):
-                return None
+        # if not user.is_google_sso:
+        #     if not verify_password(password, user.password):
+        #         return None
         return user
 
     def is_active(self, user: User) -> bool:
