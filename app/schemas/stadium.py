@@ -19,11 +19,13 @@ class StadiumBase(BaseModel):
 # Properties to receive via API on creation
 class StadiumCreate(StadiumBase): 
     name: str
+    venue_name: str
     address: Optional[str] = None
     picture: Optional[str] = None
     area: Optional[float] = None
     description: Optional[str] = None
-    created_user: int
+    # created_user: int
+    max_number_of_people: int
 
 # Properties to receive via API on update
 class StadiumUpdate(StadiumBase):
@@ -45,11 +47,13 @@ class StadiumAvailabilityResponse(StadiumBase):
 
 class StadiumInDBBase(StadiumBase):
     name: str
+    venue_name: str
     address: Optional[str] = None
     picture: Optional[str] = None
     area: Optional[float] = None
     description: Optional[str] = None
     created_user: int
+    max_number_of_people: int
 
     class Config:
         orm_mode = True
