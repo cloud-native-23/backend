@@ -42,10 +42,10 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
     
     # TODO: wait for user validation
     # def create(self, db: Session, *, obj_in: StadiumCreate, current_user: User) -> Stadium:
-    def create(self, db: Session, *, obj_in: StadiumCreate) -> Stadium:
+    def create(self, db: Session, *, obj_in: StadiumCreate, user_id: int,) -> Stadium:
 
         #TBC get_by_user_uuid name?
-        # user_in = crud.user.get_by_user_uuid(
+        # user_in = crud.user.get_by_user_id(
         #     db=db, room_id=obj_in.created_user.id
         # )
         db_obj = Stadium(
@@ -54,8 +54,10 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
             picture=obj_in.picture,
             area=obj_in.area,
             description=obj_in.description,
-            # created_user = user_in.id
-            created_user = obj_in.created_user
+            created_user = user_id,
+            venue_name = obj_in.venue_name,
+            max_number_of_people = obj_in.max_number_of_people,
+            # created_user = obj_in.created_user
         )
         db.add(db_obj)
         db.commit()

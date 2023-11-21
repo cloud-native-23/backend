@@ -22,10 +22,10 @@ class CRUDStadiumAvailableTime (CRUDBase[StadiumAvailableTime, StadiumAvailableT
         )
 
     
-    def create(self, db: Session, *, obj_in: StadiumAvailableTime) -> StadiumAvailableTime:
+    def create(self, db: Session, *, obj_in: StadiumAvailableTimeCreate, weekday: int, stadium_id: int) -> StadiumAvailableTime:
         db_obj = StadiumAvailableTime(
-            stadium_id=obj_in.stadium_id,
-            weekday=obj_in.weekday,
+            stadium_id=stadium_id,
+            weekday=weekday,
             start_time=obj_in.start_time,
             end_time=obj_in.end_time
         )
