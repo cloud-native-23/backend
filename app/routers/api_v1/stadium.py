@@ -97,11 +97,11 @@ def create_stadium(
         stadium = crud.stadium.create(db=db, obj_in=stadium_court_in.stadium, user_id=current_user.id)
 
         # Create StadiumCourts
-        stadium_courts_name = []
+        stadium_courts = []
         for stadium_court_data in stadium_court_in.stadium_court_name:
             # Associate with the created stadium
             stadium_court = crud.stadium_court.create(db=db, name=stadium_court_data, stadium_id=stadium.id)
-            stadium_courts_name.append(stadium_court.name)
+            stadium_courts.append(stadium_court)
         
         # Create StadiumAvailableTimes
         stadium_available_times = []
@@ -110,7 +110,7 @@ def create_stadium(
             stadium_available_times.append(stadium_available_time.to_dict())
 
         # Adjust the response to include stadium, StadiumAvailableTimes and stadium courts
-        return {"message": "success", "stadium": stadium, "stadium_available_times": [time for time in stadium_available_times], "stadium_courts": [court for court in stadium_courts_name]}
+        return {"message": "success", "stadium": stadium, "stadium_available_times": [time for time in stadium_available_times], "stadium_courts": [court for court in stadium_courts]}
 
     except Exception as e:
         print('Error:', e)
