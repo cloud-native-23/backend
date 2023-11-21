@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 # Shared properties
 class UserBase(BaseModel):
-    user_id: int = Field(alias='id')
+    user_id: Optional[int] = Field(alias='id')
     email: Optional[EmailStr] = None
     is_provider: bool = False
     name: Optional[str] = "--"
