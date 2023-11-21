@@ -168,18 +168,26 @@ def get_stadium(
         )
     stadium_courts = crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=stadium.id)
     stadium_available_times = crud.stadium_available_time.get_all_by_stadium_id(db=db, stadium_id=stadium_id)
-    stadium_available_times_dict = [x.to_dict() for x in stadium_available_times]
+    available_time_info = schemas.StadiumAvailableTimeForInfo(
+        weekdays = [x.weekday for x in stadium_available_times],
+        start_time = stadium_available_times[0].start_time if len(stadium_available_times) > 0 else None,
+        end_time = stadium_available_times[0].end_time if len(stadium_available_times) > 0 else None
+    )
+    # if len(stadium_available_times) != 0:
+    #     available_time_info.start_time = stadium_available_times[0].start_time
+    #     available_time_info.end_time = stadium_available_times[0].end_time
     data = schemas.StadiumInfo(
         stadium_id = stadium.id,
         name = stadium.name,
+        venue_name = stadium.venue_name,
         address = stadium.address,
         picture = stadium.picture,
         area = stadium.area,
         description = stadium.description,
         created_user = stadium.created_user,
-        max_number_of_people = stadium_courts[0].max_number_of_people if len(stadium_courts) > 0 else None,
-        number_of_court = len(stadium_courts),
-        available_times = stadium_available_times_dict
+        max_number_of_people = stadium.max_number_of_people,
+        stadium_courts = [schemas.StadiumCourtForInfo(id=x.id, name=x.name) for x in stadium_courts],
+        available_times = available_time_info
     )
 
     return {"message": "success", "data": data}
