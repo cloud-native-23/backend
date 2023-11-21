@@ -149,8 +149,7 @@ def get_stadium_list_with_created_user(
 def get_stadium(
     stadium_id: int,
     db: Session = Depends(deps.get_db),
-    # TODO: wait for user validation
-    # current_user: models.User = Depends(deps.get_current_active_user)
+    current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
     """
     Retrieve stadium info with stadium_id.
