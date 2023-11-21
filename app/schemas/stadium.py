@@ -65,8 +65,11 @@ class Stadium(StadiumInDBBase):
 
 class StadiumList(StadiumBase):
     name: str
+    venue_name: str
     picture: Optional[str] = None
     area: Optional[float] = None
+    max_number_of_people: Optional[int] = None
+    current_people_count: Optional[int] = None
 
 
 class StadiumListMessage(BaseModel):

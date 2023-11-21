@@ -120,24 +120,27 @@ def create_stadium(
 
 @router.post("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
 def get_stadium_list_with_created_user(
-    created_user: Optional[int] = None,
     db: Session = Depends(deps.get_db),
     # TODO: wait for user validation
-    # current_user: models.User = Depends(deps.get_current_active_user)
+    current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
     """
     Retrieve stadium list w/ or w/o created_user.
     """
     try:
-        
+       
         stadiums = crud.stadium.get_stadium_list(
-        db=db, user_id=created_user
+        db=db, user_id=current_user.id
         )
 
-        stadiums_data = [
-            {'stadium_id': stadium_id, 'name': name, 'picture': picture, 'area': area}
-            for stadium_id, name, picture, area in stadiums
-        ]
+        stadiums_data = []
+        for stadium_id, name, venue_name, picture, area,  max_number_of_people in stadiums:
+            current_people_count = crud.stadium.get_stadium_current_people_count(
+            db=db, stadium_id=stadium_id
+            )
+            stadiums_data.append({'stadium_id': stadium_id, 'name': name, 'venue_name': venue_name, 'picture': picture, 'area': area, 
+                                  'max_number_of_people': max_number_of_people, 'current_people_count': current_people_count})
+            
         return {"message": "success", "stadium": stadiums_data}
     
     except Exception as e:
