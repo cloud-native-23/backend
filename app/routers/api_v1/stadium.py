@@ -173,9 +173,6 @@ def get_stadium(
         start_time = stadium_available_times[0].start_time if len(stadium_available_times) > 0 else None,
         end_time = stadium_available_times[0].end_time if len(stadium_available_times) > 0 else None
     )
-    # if len(stadium_available_times) != 0:
-    #     available_time_info.start_time = stadium_available_times[0].start_time
-    #     available_time_info.end_time = stadium_available_times[0].end_time
     data = schemas.StadiumInfo(
         stadium_id = stadium.id,
         name = stadium.name,
