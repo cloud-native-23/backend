@@ -10,8 +10,8 @@ from .stadium import StadiumBase
 
 # Shared properties
 class StadiumAvailableTimeBase(BaseModel):
-    stadium_available_id: int = Field(alias='id')
-    stadium: StadiumBase
+    stadium_available_id: Optional[int] = Field(alias='id')
+    # stadium: StadiumBase
 
     class Config:
         allow_population_by_field_name = True
@@ -19,7 +19,7 @@ class StadiumAvailableTimeBase(BaseModel):
 # Properties to receive via API on creation
 
 class StadiumAvailableTimeCreate(StadiumAvailableTimeBase):
-    weekday: int
+    weekday: List[int]
     start_time: int
     end_time: int
 
@@ -31,4 +31,18 @@ class StadiumAvailableTimeUpdate(StadiumAvailableTimeBase):
     
 # Additional properties to return via API
 
+
+
 # Additional properties stored in DB
+
+class StadiumAvailableTimeInDBBase(StadiumAvailableTimeBase):
+    stadium_id: int
+    weekday: int
+    start_time: int
+    end_time: int
+
+    class Config:
+        orm_mode = True
+
+class StadiumAvailableTime(StadiumAvailableTimeInDBBase):
+    pass
