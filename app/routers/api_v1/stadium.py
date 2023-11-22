@@ -17,7 +17,7 @@ import traceback
 router = APIRouter()
 
 
-@router.get("/timetable/", response_model=schemas.StadiumAvailabilityResponse)
+@router.post("/timetable/", response_model=schemas.StadiumAvailabilityResponse)
 def get_stadium_availability(
     stadium_id: int,
     query_date: str,
@@ -41,6 +41,7 @@ def get_stadium_availability(
         available_times = crud.stadium_available_time.get_available_times(
             db=db, stadium_id=stadium_id
         )
+        print('available_times',available_times)
 
         # Iterate over the next 7 days
         for i in range(7):
@@ -53,7 +54,7 @@ def get_stadium_availability(
                 #先看這個時段有沒有被disable
                 # Check if the stadium is disabled at this time
                 is_disabled = crud.stadium_disable.is_disabled(
-                    db=db, stadium_id=stadium_id, date=current_date, start_time=start_time, end_time=end_time
+                    db=db, stadium_id=stadium_id, date=current_date, start_time=start_time
                 )
 
                 if is_disabled:
@@ -62,14 +63,77 @@ def get_stadium_availability(
                     # Check if the court is booked at this time
                     # 看該時段之下，該stadium之下的所有stadium court是否被借走
                     # 如果至少還有一個可以被租借（沒有order紀錄）則 Available
-                    is_booked = crud.order.is_booked(
+                    result = crud.order.is_booked(
                         db=db, stadium_id=stadium_id, date=current_date, start_time=start_time, end_time=end_time
                     )
 
-                    if is_booked:
+                    if result == 'all_court_be_booked':
                         availability_data["day_{}".format(i + 1)][str(start_time)] = "Booked"
-                    else:
+                    elif result == 'none_be_booked' or result == 'at_least_one_court_be_booked':
                         availability_data["day_{}".format(i + 1)][str(start_time)] = "Available"
+            response_data["data"].append(availability_data)
+
+        return response_data
+
+    except Exception as e:
+        print('Error:', e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.post("/providertimetable/", response_model=schemas.StadiumAvailabilityResponse)
+def get_stadium_availability_for_provider(
+    stadium_id: int,
+    query_date: str,
+    db: Session = Depends(deps.get_db)
+):
+    #有訂單 可下架 已下架 下架單位是stadium
+    #已下架->已經被disable
+    #有訂單->該stadium 之下的所有 stadium court ，至少有一個stadium court有該時段的訂單
+        #is_ordered
+    try:
+        stadium = crud.stadium.get_by_stadium_id(db=db, stadium_id=stadium_id)
+        if not stadium:
+            raise HTTPException(status_code=404, detail="Stadium not found")
+
+        # Convert query_date to datetime
+        query_date = datetime.strptime(query_date, "%Y-%m-%d")
+
+        # Initialize the response data structure
+        response_data = {
+            "stadium_id": stadium_id,
+            "query_date": query_date,
+            "message": "success",
+            "data": [],
+        }
+        available_times = crud.stadium_available_time.get_available_times(
+            db=db, stadium_id=stadium_id
+        )
+        # Iterate over the next 7 days
+        for i in range(7):
+            current_date = query_date + timedelta(days=i)
+            availability_data = {"day_{}".format(i + 1): {}}
+            # Iterate over the available time slots in a day
+            for start_time in range(available_times.start_time, available_times.end_time):  
+                end_time = start_time + 1
+                #先看這個時段有沒有被disable
+                # Check if the stadium is disabled at this time
+                is_disabled = crud.stadium_disable.is_disabled(
+                    db=db, stadium_id=stadium_id, date=current_date, start_time=start_time
+                )
+
+                if is_disabled:
+                    availability_data["day_{}".format(i + 1)][str(start_time)] = "disable"
+                else:
+                    # Check if the court is booked at this time
+                    result = crud.order.is_booked(
+                        db=db, stadium_id=stadium_id, date=current_date, start_time=start_time, end_time=end_time
+                    )
+
+                    if result=='at_least_one_court_be_booked':
+                        availability_data["day_{}".format(i + 1)][str(start_time)] = "has_order"
+                    else:
+                        availability_data["day_{}".format(i + 1)][str(start_time)] = "no_order"
             response_data["data"].append(availability_data)
 
         return response_data
