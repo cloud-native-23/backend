@@ -373,4 +373,89 @@ def disable_stadium(
             )
         
     return {'message': 'success', 'data': StadiumUndisableCreate_in}
-            
+
+@router.put("/", response_model=schemas.stadium.StadiumInfoMessage)
+def update_stadium(
+    stadium_obj_in: schemas.stadium.StadiumUpdateAdditionalInfo,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Update stadium info, including modifications to stadium_court and stadium_available_time.
+    """
+    orig_stadium = crud.stadium.get_by_stadium_id(db=db, stadium_id=stadium_obj_in.stadium_id)
+    if orig_stadium is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Fail to update stadium. No stadium data with stadium_id = {}.".format(stadium_obj_in.stadium_id),
+        )
+    try:
+        # TODO: what if provider remove a court already reserved ???
+        ### update stadium ###
+        orig_stadium.name = stadium_obj_in.name
+        orig_stadium.venue_name = stadium_obj_in.venue_name
+        orig_stadium.address = stadium_obj_in.address
+        orig_stadium.picture = stadium_obj_in.picture
+        orig_stadium.area = stadium_obj_in.area
+        orig_stadium.description = stadium_obj_in.description
+        orig_stadium.max_number_of_people = stadium_obj_in.max_number_of_people
+        db.add(orig_stadium)
+        ### update stadium_courts ###
+        for stadium_court_in in stadium_obj_in.stadium_courts:
+            if stadium_court_in.id is None:
+                create_stadium_court = models.stadium_court.StadiumCourt(
+                    stadium_id = orig_stadium.id,
+                    name = stadium_court_in.name
+                )
+                db.add(create_stadium_court)
+            else:
+                court = crud.stadium_court.get_by_stadium_court_id(db=db, stadium_court_id=stadium_court_in.id)
+                # if not in db => new add
+                if court is None:
+                    create_stadium_court = models.stadium_court.StadiumCourt(
+                        stadium_id = orig_stadium.id,
+                        name = stadium_court_in.name
+                    )
+                    db.add(create_stadium_court)
+                else: # update
+                    court.name = stadium_court_in.name
+                    db.add(court)
+        # stadium_courts in db but not in api input => delete
+        db_stadium_courts = crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=stadium_obj_in.stadium_id)
+        stadium_courts_to_delete = [x for x in db_stadium_courts if x.id not in [y.id for y in stadium_obj_in.stadium_courts]]
+        for delete_court in stadium_courts_to_delete:
+            db.delete(delete_court)
+        ### update stadium_available_times ###
+        update_available_times = stadium_obj_in.available_times
+        # delete all first
+        db.query(models.stadium_available_time.StadiumAvailableTime).filter(models.stadium_available_time.StadiumAvailableTime.stadium_id == stadium_obj_in.stadium_id).delete()
+        # create new available_times
+        for weekday in update_available_times.weekdays:
+            create_available_time = models.stadium_available_time.StadiumAvailableTime(
+                stadium_id = orig_stadium.id,
+                weekday = weekday,
+                start_time = update_available_times.start_time,
+                end_time = update_available_times.end_time
+            )
+            db.add(create_available_time)
+        db.commit()    
+
+        data = schemas.StadiumInfo(
+            stadium_id = stadium_obj_in.stadium_id,
+            name = stadium_obj_in.name,
+            venue_name = stadium_obj_in.venue_name,
+            address = stadium_obj_in.address,
+            picture = stadium_obj_in.picture,
+            area = stadium_obj_in.area,
+            description = stadium_obj_in.description,
+            created_user = orig_stadium.created_user,
+            max_number_of_people = stadium_obj_in.max_number_of_people,
+            stadium_courts = [schemas.StadiumCourtForInfo(id=x.id, name=x.name) for x in crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=orig_stadium.id)],
+            available_times = stadium_obj_in.available_times
+        )
+
+        return {'message': 'success', 'data': data}
+    except Exception as e:
+        print('error >>> ', e)
+
+        return {'message': 'fail. error: {}'.format(e)}

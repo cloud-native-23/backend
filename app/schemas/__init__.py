@@ -19,7 +19,8 @@ from .stadium import (
     StadiumCourtForInfo,
     StadiumAvailableTimeForInfo,
     StadiumInfo,
-    StadiumInfoMessage
+    StadiumInfoMessage,
+    StadiumUpdateAdditionalInfo
 )
 from .stadium_court import (
     StadiumCourtBase,
@@ -32,6 +33,7 @@ from .stadium_court import (
 from .stadium_available_time import (
     StadiumAvailableTimeBase,
     StadiumAvailableTimeCreate,
+    StadiumAvailableTimeSingleCreate,
     StadiumAvailableTimeUpdate
 )
 from .stadium_disable import (

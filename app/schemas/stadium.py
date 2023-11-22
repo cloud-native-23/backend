@@ -30,10 +30,12 @@ class StadiumCreate(StadiumBase):
 # Properties to receive via API on update
 class StadiumUpdate(StadiumBase):
     name: str
+    venue_name: str
     address: Optional[str] = None
     picture: Optional[str] = None
     area: Optional[float] = None
     description: Optional[str] = None
+    max_number_of_people: int
 
 # Additional properties to return via API
 class StadiumAvailabilityResponse(StadiumBase): 
@@ -78,7 +80,7 @@ class StadiumListMessage(BaseModel):
 
 # define in this file to avoid circular import
 class StadiumCourtForInfo(BaseModel):
-    id: int
+    id: Optional[int] # optional for add new stadium_court when update stadium
     name: str
 
 class StadiumAvailableTimeForInfo(BaseModel):
@@ -94,6 +96,10 @@ class StadiumInfo(Stadium):
 class StadiumInfoMessage(BaseModel):
     message: str
     data: Optional[StadiumInfo]
+
+class StadiumUpdateAdditionalInfo(StadiumUpdate):
+    stadium_courts: List[StadiumCourtForInfo]
+    available_times: StadiumAvailableTimeForInfo
 
 class StadiumDeleteMessage(BaseModel):
     message: str
