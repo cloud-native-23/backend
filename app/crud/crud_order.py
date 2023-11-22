@@ -6,6 +6,7 @@ from datetime import timedelta, datetime
 
 from app.crud.base import CRUDBase
 from app.models.order import Order
+from app.models.team import Team
 from app.models.stadium_court import StadiumCourt
 from app.schemas.order import OrderCreate, OrderUpdate
 
@@ -46,7 +47,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     
     def is_booked(
         self, db: Session, *,  stadium_id: int, date: datetime, start_time: int, end_time: int
-    ) -> bool:
+    ):
         """
         Check if the court is booked at a specific time.
         """
@@ -55,7 +56,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             .filter(StadiumCourt.stadium_id == stadium_id)
             .all()
         )
-        #print(court_ids_subquery,'court_ids_subquery')
+        
         court_ids = [court_id for (court_id,) in court_ids_subquery]
         booked_court_count = (
             db.query(func.count(Order.stadium_court_id))
@@ -68,7 +69,6 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             )
             .scalar()
         )
-        print('booked_court_count',booked_court_count,len(court_ids))
         if booked_court_count !=0:
             return('at_least_one_court_be_booked')
         elif booked_court_count == len(court_ids):
@@ -76,7 +76,46 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         else:
             return('none_be_booked')
     
-    #def has_order()
+    def headcount_and_level_requirement_checking(
+        self, db: Session, *,  stadium_id: int, current_date: datetime, start_time: int, headcount:int, level_requirement:int
+    ):
+        court_ids_subquery = (
+            db.query(StadiumCourt.id)
+            .filter(StadiumCourt.stadium_id == stadium_id)
+            .all()
+        )
+        court_ids = [court_id for (court_id,) in court_ids_subquery]
+        headcount_results = {}
+        for court_id in court_ids:
+        # Check if there is an order for the court within the specified time range
+            order = (
+                db.query(Order)
+                .filter(
+                    Order.stadium_court_id == court_id,
+                    Order.date == current_date,
+                    Order.start_time == start_time,
+                )
+                .first()
+            )
+            if order:
+                if order.is_matching == True:
+                    #有order且允許配對 查看人數跟等級限制
+                    # If there is an order, get the team's current member count
+                    team = db.query(Team).filter(Team.order_id == order.id, Team.level_requirement<= level_requirement).first()
+                    if (team.max_number_of_member - team.current_member_number) >= headcount:
+                        return True
+                    else:
+                        return False
+                elif order.is_matching == False:
+                    #order不開放配對
+                    return False
+            else:
+                #沒有order 可以直接加入
+                # If there is no order, set the headcount to 0
+                return True
+            
+
+        return headcount_results
 
 
 order = CRUDOrder(Order)
