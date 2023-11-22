@@ -57,7 +57,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         )
         #print(court_ids_subquery,'court_ids_subquery')
         court_ids = [court_id for (court_id,) in court_ids_subquery]
-        available_court_count = (
+        booked_court_count = (
             db.query(func.count(Order.stadium_court_id))
             .filter(
                 Order.stadium_court_id.in_(court_ids),
@@ -68,11 +68,15 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             )
             .scalar()
         )
-        print('available_court_count',available_court_count)
-        if available_court_count == len(court_ids):
-            return True
+        print('booked_court_count',booked_court_count,len(court_ids))
+        if booked_court_count !=0:
+            return('at_least_one_court_be_booked')
+        elif booked_court_count == len(court_ids):
+            return('all_court_be_booked')
         else:
-            return False
+            return('none_be_booked')
+    
+    #def has_order()
 
 
 order = CRUDOrder(Order)
