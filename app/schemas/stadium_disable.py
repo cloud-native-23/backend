@@ -15,10 +15,12 @@ class StadiumDisableBase(BaseModel):
 
 # Properties to receive via API on creation
 
-class StadiumDisableCreate(StadiumDisableBase):
+class StadiumDisableSessions(BaseModel):
     date: date
     start_time: int
-    end_time: int
+
+class StadiumDisableCreate(StadiumDisableBase):
+    sessions: List[StadiumDisableSessions]
 
 # Properties to receive via API on update
 class StadiumDisableUpdate(StadiumDisableBase):

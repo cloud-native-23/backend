@@ -24,13 +24,14 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
 
     
     def create(self, db: Session, *, obj_in: StadiumDisableCreate) -> StadiumDisable:
-        db_obj = StadiumDisable(
-            stadium_id=obj_in.stadium_id,
-            date=obj_in.date,
-            start_time=obj_in.start_time,
-            end_time=obj_in.end_time
-        )
-        db.add(db_obj)
+        for session in obj_in.sessions:
+            db_obj = StadiumDisable(
+                stadium_id=obj_in.stadium_id,
+                date=session.date,
+                start_time=session.start_time,
+                end_time=session.start_time+1,
+            )
+            db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
         return db_obj
@@ -46,7 +47,7 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
         return True
     
     def is_disabled(
-        self, db: Session, *, stadium_id: int, date: date, start_time: int, end_time: int
+        self, db: Session, *, stadium_id: int, date: date, start_time: int
     ) -> bool:
         """
         Check if the stadium is disabled at a specific time.
@@ -56,8 +57,7 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
             .filter(
                 StadiumDisable.stadium_id == stadium_id,
                 StadiumDisable.date == date,
-                StadiumDisable.start_time <= end_time,
-                StadiumDisable.end_time >= start_time,
+                StadiumDisable.start_time == start_time,
             )
             .first() is not None
         )

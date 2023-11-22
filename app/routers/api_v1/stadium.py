@@ -216,6 +216,7 @@ def delete_stadium(
 def disable_stadium(
     StadiumDisableCreate_in: schemas.stadium_disable.StadiumDisableCreate,
     db: Session = Depends(deps.get_db),
+    current_user: models.user = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Disable stadium with stadium_id.
@@ -225,6 +226,7 @@ def disable_stadium(
             status_code=400,
             detail="Fail to disable stadium. Missing parameter: stadium_id"
         )
+    
     stadium = crud.stadium.get_by_stadium_id(
         db=db, stadium_id=StadiumDisableCreate_in.stadium_id)
     if not stadium:
@@ -232,14 +234,17 @@ def disable_stadium(
             status_code=400,
             detail="No stadium to disable.",
         )
-    stadium_disable = crud.stadium_disable.is_disabled(
-        db=db, stadium_id=StadiumDisableCreate_in.stadium_id, date=StadiumDisableCreate_in.date, start_time=StadiumDisableCreate_in.start_time, end_time=StadiumDisableCreate_in.end_time
-    )
-    if stadium_disable:
-        raise HTTPException(
-            status_code=400,
-            detail="Stadium is already disabled at the time.",
+    
+    for session in StadiumDisableCreate_in.sessions:
+        stadium_disable = crud.stadium_disable.is_disabled(
+            db=db, stadium_id=StadiumDisableCreate_in.stadium_id, date=session.date, start_time=session.start_time
         )
+        if stadium_disable:
+            raise HTTPException(
+                status_code=400,
+                detail="Stadium is already disabled at the time.",
+            )
+        
     isDisableSuccessfully = crud.stadium_disable.create(db=db, obj_in=StadiumDisableCreate_in)
     if isDisableSuccessfully:
         return {'message': 'success', 'data': StadiumDisableCreate_in}
