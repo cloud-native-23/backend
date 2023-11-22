@@ -9,7 +9,8 @@ from app.crud.base import CRUDBase
 from app.models.stadium_disable import StadiumDisable
 from app.schemas.stadium_disable import (
     StadiumDisableCreate,
-    StadiumDisableUpdate
+    StadiumDisableUpdate,
+    StadiumDisableInDBBase
 )
 
 
@@ -21,6 +22,15 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
         return (
             db.query(StadiumDisable).filter(StadiumDisable.id == stadium_id).all()
         )
+    
+    def get_by_stadium_id_and_session(
+         self, db: Session, *, obj_in: StadiumDisableInDBBase
+    ) -> Optional[StadiumDisable]:
+        return (
+            db.query(StadiumDisable)
+            .filter_by(StadiumDisable.stadium_id==obj_in.stadium_id, StadiumDisable.date==obj_in.date, 
+                       StadiumDisable.start_time==obj_in.start_time, StadiumDisable.end_time==obj_in.end_time).first()
+        )           
 
     
     def create(self, db: Session, *, obj_in: StadiumDisableCreate) -> StadiumDisable:
@@ -37,14 +47,16 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
         return db_obj
 
     
-    def delete_by_stadium_id(self, db: Session, *, stadium_id: str):
+    def delete_by_stadium_id_and_session(self, db: Session, *, stadium_id: int, date: date, start_time: int) -> bool:
         #in update stadium page, if update stadium_court, call this 
-        if stadium_id is not None or stadium_id != "":
-            db_objs = self.get_all_by_stadium_id(stadium_id)
-            for db_obj in db_objs:
-                db.delete(db_obj)
+        stadium_disable = db.query(StadiumDisable).filter_by(stadium_id=stadium_id, date=date, 
+                                                                start_time=start_time).first()
+        if stadium_disable is not None:
+            db.delete(stadium_disable)
             db.commit()
-        return True
+            return True
+        else:
+            return False
     
     def is_disabled(
         self, db: Session, *, stadium_id: int, date: date, start_time: int

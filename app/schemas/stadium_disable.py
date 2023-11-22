@@ -3,7 +3,7 @@ BaseModel.schema will return a dict of the schema
 while BaseModel.schema_json will return a JSON string representation of that dict.
 """
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel
 from .stadium import StadiumBase
@@ -28,14 +28,19 @@ class StadiumDisableUpdate(StadiumDisableBase):
     start_time: int
     end_time: int
     
-# Additional properties to return via API
+# Additional properties stored in DB
 
-# Disabke return message
-class StadiumDisableResponse(BaseModel):
-    message: str
-    data: Optional[StadiumDisableCreate] = None
+class StadiumDisableInDBBase(StadiumDisableBase):
+    date: date
+    start_time: int
+    end_time: int
 
     class Config:
         orm_mode = True
 
-# Additional properties stored in DB
+# Additional properties to return via API
+
+# Disable return message
+class StadiumDisableResponse(BaseModel):
+    message: str
+    data: Optional[StadiumDisableCreate] = None
