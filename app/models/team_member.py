@@ -16,3 +16,4 @@ class TeamMember(Base):
         ForeignKey("User.id", ondelete="CASCADE"),
         nullable=False
     )
+    status = Column(Integer, nullable=False)
