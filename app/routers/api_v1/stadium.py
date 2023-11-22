@@ -135,11 +135,11 @@ def get_stadium_list_with_created_user(
 
         stadiums_data = []
         for stadium_id, name, venue_name, picture, area,  max_number_of_people in stadiums:
-            current_people_count = crud.stadium.get_stadium_current_people_count(
+            current_people_count, number_of_courts = crud.stadium.get_stadium_current_people_count(
             db=db, stadium_id=stadium_id
             )
             stadiums_data.append({'stadium_id': stadium_id, 'name': name, 'venue_name': venue_name, 'picture': picture, 'area': area, 
-                                  'max_number_of_people': max_number_of_people, 'current_people_count': current_people_count})
+                                  'max_number_of_people': max_number_of_people*number_of_courts, 'current_people_count': current_people_count})
             
         return {"message": "success", "stadium": stadiums_data}
     

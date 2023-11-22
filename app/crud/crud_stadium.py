@@ -48,6 +48,7 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
 
         # Extract the ids as a list
         stadium_court_ids = [court_id for (court_id,) in stadium_court_ids]
+        number_of_courts = len(stadium_court_ids)
 
         # Get the current date and time
         current_datetime = datetime.now(tz=ZoneInfo("Asia/Taipei"))
@@ -70,7 +71,7 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
         )
 
 
-        return current_people_count
+        return current_people_count, number_of_courts
 
     def get_stadium_list(
             self, 
