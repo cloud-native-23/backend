@@ -23,6 +23,11 @@ class StadiumAvailableTimeCreate(StadiumAvailableTimeBase):
     start_time: int
     end_time: int
 
+class StadiumAvailableTimeSingleCreate(StadiumAvailableTimeBase):
+    weekday: int
+    start_time: int
+    end_time: int
+
 # Properties to receive via API on update
 class StadiumAvailableTimeUpdate(StadiumAvailableTimeBase):
     weekday: int
