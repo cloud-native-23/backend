@@ -85,7 +85,6 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             .all()
         )
         court_ids = [court_id for (court_id,) in court_ids_subquery]
-        headcount_results = {}
         for court_id in court_ids:
         # Check if there is an order for the court within the specified time range
             order = (
@@ -111,7 +110,6 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             else:
                 #no order, can join
                 return True
-        return headcount_results
 
 
 order = CRUDOrder(Order)
