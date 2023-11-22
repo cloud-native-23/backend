@@ -45,7 +45,7 @@ def get_stadium_availability(
         )
 
         # Iterate over the next 7 days
-        for i in range(1):
+        for i in range(7):
             current_date = query_date + timedelta(days=i)
             availability_data = {"day_{}".format(i + 1): {}}
             # Iterate over the available time slots in a day
@@ -96,10 +96,9 @@ def get_stadium_availability_for_provider(
     query_date: str,
     db: Session = Depends(deps.get_db)
 ):
-    #有訂單 可下架 已下：架 下架單位是stadium
+    #有訂單/可下架/已下架 下架單位是stadium
     #已下架->已經被disable
     #有訂單->該stadium 之下的所有 stadium court ，至少有一個stadium court有該時段的訂單
-        #is_ordered
     try:
         stadium = crud.stadium.get_by_stadium_id(db=db, stadium_id=stadium_id)
         if not stadium:

@@ -99,22 +99,18 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             )
             if order:
                 if order.is_matching == True:
-                    #有order且允許配對 查看人數跟等級限制
-                    # If there is an order, get the team's current member count
+                    #has order and is_matching,  checking limit about headcount and level
                     team = db.query(Team).filter(Team.order_id == order.id, Team.level_requirement<= level_requirement).first()
                     if (team.max_number_of_member - team.current_member_number) >= headcount:
                         return True
                     else:
                         return False
                 elif order.is_matching == False:
-                    #order不開放配對
+                    #order is not for matching
                     return False
             else:
-                #沒有order 可以直接加入
-                # If there is no order, set the headcount to 0
+                #no order, can join
                 return True
-            
-
         return headcount_results
 
 
