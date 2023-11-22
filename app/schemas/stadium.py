@@ -74,17 +74,19 @@ class StadiumListMessage(BaseModel):
     stadium: Optional[List[StadiumList]] = None
 
 # define in this file to avoid circular import
-class StadiumAvailableTimeForInfo(BaseModel):
+class StadiumCourtForInfo(BaseModel):
     id: int
-    stadium_id: int
-    weekday: int
-    start_time: int
-    end_time: int
+    name: str
+
+class StadiumAvailableTimeForInfo(BaseModel):
+    weekdays: Optional[List[int]] = None
+    start_time: Optional[int] = None
+    end_time: Optional[int] = None
 
 class StadiumInfo(Stadium):
     max_number_of_people: Optional[int]
-    number_of_court: int
-    available_times: List[StadiumAvailableTimeForInfo]
+    stadium_courts: List[StadiumCourtForInfo]
+    available_times: StadiumAvailableTimeForInfo
 
 class StadiumInfoMessage(BaseModel):
     message: str

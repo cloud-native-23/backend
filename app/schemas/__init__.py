@@ -16,6 +16,8 @@ from .stadium import (
     StadiumAvailabilityResponse,
     Stadium,
     StadiumInDBBase,
+    StadiumCourtForInfo,
+    StadiumAvailableTimeForInfo,
     StadiumInfo,
     StadiumInfoMessage
 )
