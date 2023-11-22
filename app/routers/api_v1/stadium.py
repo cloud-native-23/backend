@@ -21,6 +21,8 @@ router = APIRouter()
 def get_stadium_availability(
     stadium_id: int,
     query_date: str,
+    headcount:int,
+    level_requirement:int,
     db: Session = Depends(deps.get_db)
 ):
     try:
@@ -41,7 +43,6 @@ def get_stadium_availability(
         available_times = crud.stadium_available_time.get_available_times(
             db=db, stadium_id=stadium_id
         )
-        print('available_times',available_times)
 
         # Iterate over the next 7 days
         for i in range(7):
@@ -63,14 +64,22 @@ def get_stadium_availability(
                     # Check if the court is booked at this time
                     # 看該時段之下，該stadium之下的所有stadium court是否被借走
                     # 如果至少還有一個可以被租借（沒有order紀錄）則 Available
-                    result = crud.order.is_booked(
+                    booking_result = crud.order.is_booked(
                         db=db, stadium_id=stadium_id, date=current_date, start_time=start_time, end_time=end_time
                     )
+                    headcount_and_level_checking_result = crud.order.headcount_and_level_requirement_checking(
+                        db=db, stadium_id=stadium_id, current_date=current_date, start_time=start_time, headcount= headcount, level_requirement = level_requirement
+                    )
 
-                    if result == 'all_court_be_booked':
+                    if booking_result == 'all_court_be_booked':
                         availability_data["day_{}".format(i + 1)][str(start_time)] = "Booked"
-                    elif result == 'none_be_booked' or result == 'at_least_one_court_be_booked':
+                    elif booking_result == 'none_be_booked':
                         availability_data["day_{}".format(i + 1)][str(start_time)] = "Available"
+                    elif booking_result == 'at_least_one_court_be_booked':
+                        if headcount_and_level_checking_result==True:
+                            availability_data["day_{}".format(i + 1)][str(start_time)] = "Available"
+                        else:
+                            availability_data["day_{}".format(i + 1)][str(start_time)] = "Booked"
             response_data["data"].append(availability_data)
 
         return response_data
@@ -87,10 +96,9 @@ def get_stadium_availability_for_provider(
     query_date: str,
     db: Session = Depends(deps.get_db)
 ):
-    #有訂單 可下架 已下架 下架單位是stadium
+    #有訂單/可下架/已下架 下架單位是stadium
     #已下架->已經被disable
     #有訂單->該stadium 之下的所有 stadium court ，至少有一個stadium court有該時段的訂單
-        #is_ordered
     try:
         stadium = crud.stadium.get_by_stadium_id(db=db, stadium_id=stadium_id)
         if not stadium:
