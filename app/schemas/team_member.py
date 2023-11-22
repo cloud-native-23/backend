@@ -14,7 +14,7 @@ from .team import TeamBase
 
 # Shared properties
 class TeamMemberBase(BaseModel):
-    pass
+    status: int
 
 
 # Properties to receive via API on creation
