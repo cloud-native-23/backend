@@ -51,7 +51,7 @@ class StadiumCourtCreateWithMessage(BaseModel):
     message: str
     stadium: Stadium
     stadium_available_times: List[StadiumAvailableTime]
-    stadium_courts: List[StadiumCourtBase]
+    stadium_court: List[StadiumCourtBase]
 
 # stadium_court_with_rent_info
 
