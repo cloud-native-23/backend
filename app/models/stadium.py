@@ -13,6 +13,7 @@ class Stadium(Base):
     area = Column(Float, nullable=True)
     description = Column(String, nullable=True)
     max_number_of_people = Column(Integer, nullable=False)
+    google_map_url = Column(String, nullable=True)
     created_user = Column(
         Integer,
         ForeignKey("User.id"),

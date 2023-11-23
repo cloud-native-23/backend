@@ -26,6 +26,7 @@ class StadiumCreate(StadiumBase):
     description: Optional[str] = None
     # created_user: int
     max_number_of_people: int
+    google_map_url: Optional[str] = None
 
 # Properties to receive via API on update
 class StadiumUpdate(StadiumBase):
@@ -36,6 +37,7 @@ class StadiumUpdate(StadiumBase):
     area: Optional[float] = None
     description: Optional[str] = None
     max_number_of_people: int
+    google_map_url: Optional[str] = None
 
 # Additional properties to return via API
 class StadiumAvailabilityResponse(StadiumBase): 
@@ -56,6 +58,7 @@ class StadiumInDBBase(StadiumBase):
     description: Optional[str] = None
     created_user: int
     max_number_of_people: int
+    google_map_url: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -72,6 +75,7 @@ class StadiumList(StadiumBase):
     area: Optional[float] = None
     max_number_of_people: Optional[int] = None
     current_people_count: Optional[int] = None
+    google_map_url: Optional[str] = None
 
 
 class StadiumListMessage(BaseModel):
