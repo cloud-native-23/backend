@@ -101,7 +101,7 @@ def create_stadium(
         for stadium_court_data in stadium_court_in.stadium_court_name:
             # Associate with the created stadium
             stadium_court = crud.stadium_court.create(db=db, name=stadium_court_data, stadium_id=stadium.id)
-            stadium_courts.append(stadium_court)
+            stadium_courts.append({"stadium_court_id": stadium_court.id, "name": stadium_court.name})
         
         # Create StadiumAvailableTimes
         stadium_available_times = []
@@ -110,7 +110,7 @@ def create_stadium(
             stadium_available_times.append(stadium_available_time.to_dict())
 
         # Adjust the response to include stadium, StadiumAvailableTimes and stadium courts
-        return {"message": "success", "stadium": stadium, "stadium_available_times": [time for time in stadium_available_times], "stadium_courts": [court for court in stadium_courts]}
+        return {"message": "success", "stadium": stadium, "stadium_available_times": [time for time in stadium_available_times], "stadium_court": [court for court in stadium_courts]}
 
     except Exception as e:
         print('Error:', e)
@@ -121,6 +121,7 @@ def create_stadium(
 @router.post("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
 def get_stadium_list_with_created_user(
     db: Session = Depends(deps.get_db),
+    filter_by_created_user: bool = True,
     # TODO: wait for user validation
     current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
@@ -128,10 +129,15 @@ def get_stadium_list_with_created_user(
     Retrieve stadium list w/ or w/o created_user.
     """
     try:
-       
-        stadiums = crud.stadium.get_stadium_list(
-        db=db, user_id=current_user.id
+              
+        if filter_by_created_user:
+           stadiums = crud.stadium.get_stadium_list(
+               db=db, user_id=current_user.id
         )
+        else:
+            stadiums = crud.stadium.get_stadium_list(
+                db=db, user_id=None
+            )
 
         stadiums_data = []
         for stadium_id, name, venue_name, picture, area,  max_number_of_people in stadiums:
