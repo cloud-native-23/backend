@@ -53,3 +53,16 @@ class StadiumCourtCreateWithMessage(BaseModel):
     stadium_available_times: List[StadiumAvailableTime]
     stadium_courts: List[StadiumCourtBase]
 
+# stadium_court_with_rent_info
+
+class StadiumCourtWithRentInfo(StadiumCourtBase):
+    renter_name: Optional[str] = None
+    team_id: Optional[int] = None
+    current_member_number: Optional[int] = None
+    max_number_of_member: Optional[int] = None
+    level_requirement: Optional[List[str]] = None
+    status: str
+
+class StadiumCourtWithRentInfoMessage(BaseModel):
+    message: str
+    data: Optional[List[StadiumCourtWithRentInfo]]

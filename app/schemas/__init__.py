@@ -28,7 +28,9 @@ from .stadium_court import (
     StadiumCourtUpdate,
     StadiumCourtCreate,
     StadiumCourtCreateWithMessage,
-    StadiumCourt
+    StadiumCourt,
+    StadiumCourtWithRentInfo,
+    StadiumCourtWithRentInfoMessage
 )
 from .stadium_available_time import (
     StadiumAvailableTimeBase,
