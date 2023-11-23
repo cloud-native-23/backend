@@ -25,8 +25,8 @@ def get_rent_info(
     date: str,
     start_time: int,
     # end_time: int,
-    headcount: Optional[int] = None,
-    level_requirement: Optional[str] = None,
+    headcount: int,
+    level_requirement: str,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
