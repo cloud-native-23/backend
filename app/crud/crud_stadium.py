@@ -107,7 +107,7 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
             created_user = user_id,
             venue_name = obj_in.venue_name,
             max_number_of_people = obj_in.max_number_of_people,
-            # created_user = obj_in.created_user
+            google_map_url = obj_in.google_map_url
         )
         db.add(db_obj)
         db.commit()
