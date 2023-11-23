@@ -18,6 +18,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
 
     def get_by_id(self, db: Session, *, user_id: int) -> Optional[User]:
         return db.query(User).filter(User.id == user_id).first()
+    
+    def get_all_user(self, db: Session)-> Optional[User]:
+        return db.query(User.id, User.email).all()
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
         if obj_in.password:

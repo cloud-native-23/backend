@@ -106,6 +106,17 @@ def update_user_profile(
     }
 
 
+@router.get("/get-all-users", response_model=schemas.user.AllUsersResponse)
+def get_all_users(
+    db: Session = Depends(deps.get_db)
+) -> Any:
+    all_user = crud.user.get_all_user(db=db)
+    user_list_items = [
+        schemas.user.UserListItem(id=user.id, email=user.email)
+        for user in all_user
+    ]
+    return {"message": "success", "data": user_list_items}
+
 # @router.get("/logout", response_model=schemas.user.UserMessage)
 # async def logout(request: Request):
 #     user = request.session.get("user")
