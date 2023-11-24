@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.crud.base import CRUDBase
 from app.models.team_member import TeamMember
 from app.schemas.team_member import TeamMemberCreate, TeamMemberUpdate
+from app.models.team import Team
 
 class CRUDTeamMember(CRUDBase[TeamMember, TeamMemberCreate, TeamMemberUpdate]):
     def get_by_team_member_id(self, db: Session, *, team_member_id: int) -> Optional[TeamMember]:
@@ -43,6 +44,10 @@ class CRUDTeamMember(CRUDBase[TeamMember, TeamMemberCreate, TeamMemberUpdate]):
                 db.delete(db_obj)
             db.commit()
         return True
-
+    
+    def leave_team(self, db=Session, *, team_id:int, user_id: int):
+        db.query(TeamMember).filter(TeamMember.team_id == team_id, TeamMember.user_id == user_id).update({"status": 0})
+        db.commit()
+        return True
 
 team_member = CRUDTeamMember(TeamMember)

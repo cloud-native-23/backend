@@ -9,7 +9,7 @@ from app.schemas.team import TeamCreate, TeamUpdate
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamUpdate]):
     def get_by_team_id(self, db: Session, *, team_id: int) -> Optional[Team]:
-        return db.query(Team).filter(Team.team_id == team_id).first()
+        return db.query(Team).filter(Team.id == team_id).first()
 
     def get_by_order_id(self, db: Session, *, order_id: int) -> Optional[Team]:
         return db.query(Team).filter(Team.order_id == order_id).first()

@@ -4,3 +4,5 @@ from .crud_stadium_court import stadium_court
 from .crud_stadium_available_time import stadium_available_time
 from .crud_stadium_disable import stadium_disable
 from .crud_order import order
+from .crud_team import team
+from .crud_team_member import team_member
