@@ -21,7 +21,6 @@ def create_access_token(
         expire = datetime.utcnow() + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
-    #to_encode = {"exp": expire, "sub": subject}
     if isinstance(subject, dict):
         to_encode = {"exp": expire, **subject}
     else:
