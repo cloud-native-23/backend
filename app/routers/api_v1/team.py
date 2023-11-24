@@ -61,7 +61,7 @@ def get_join_list(
 
         # Fetch team members
         team_members = (
-            db.query(models.User.name)
+            db.query(models.User.name, models.User.email)
             .join(models.TeamMember, models.TeamMember.user_id == models.User.id)
             .filter(models.TeamMember.team_id == team.id)
             .filter(models.TeamMember.status==1)
@@ -69,7 +69,7 @@ def get_join_list(
             .all()
         )
 
-        team_data["team_members"] = [member.name for member in team_members]
+        team_data["team_members"] = [{"name": name, "email": email} for name, email in team_members]
         team_joint_list.append(team_data)
 
     return {"team_joint_list": team_joint_list}
