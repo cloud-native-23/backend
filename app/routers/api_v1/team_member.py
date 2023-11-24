@@ -13,11 +13,7 @@ from app.core.config import settings
 from app.routers import deps
 import traceback
 
-
 router = APIRouter()
-
-#input team id and get_current_user
-#return 200
     
 @router.post("/leave", response_model=schemas.stadium_disable.StadiumDisableResponse)
 def leave(
@@ -28,7 +24,6 @@ def leave(
     """
     leave team
     """
-    #step 1 check team and current_user is in db
     if (team_id == '' or team_id is None):
         raise HTTPException(
             status_code=400,
