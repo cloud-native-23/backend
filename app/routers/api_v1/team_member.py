@@ -36,8 +36,9 @@ def leave(
             status_code=400,
             detail="No team to leave.",
         )
-    isLeaveSuccessfully = crud.team_member.leave_team(db=db, team_id=team.id, user_id=current_user.id)
-    if isLeaveSuccessfully:
+    leave_successfully = crud.team_member.leave_team(db = db, team_id = team.id, user_id = current_user.id)
+    decrease_current_member_number_successfully = crud.team.decrease_current_member_number(db = db, team_id = team.id)
+    if leave_successfully and decrease_current_member_number_successfully:
         return {'message': 'success', 'data': None}
     else:
         return {'message': 'fail', 'data': None}

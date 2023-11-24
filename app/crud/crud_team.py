@@ -39,6 +39,16 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamUpdate]):
         db.delete(db_obj)
         db.commit()
         return True
+    
+    def decrease_current_member_number(self, db: Session,* , team_id: int) -> bool:
+        team = db.query(Team).filter(Team.id == team_id).first()
+        if not team:
+            return False  # Team not found
+        # Decrease current_member_number by 1
+        team.current_member_number -= 1
+        # Commit the changes to the database
+        db.commit()
+        return True
 
 
 team = CRUDTeam(Team)
