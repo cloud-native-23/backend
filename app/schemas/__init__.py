@@ -51,7 +51,8 @@ from .order import (
 from .team import(
     TeamBase,
     TeamCreate,
-    TeamUpdate
+    TeamUpdate,
+    TeamJointListResponse
 )
 from .team_member import(
     TeamMemberBase,

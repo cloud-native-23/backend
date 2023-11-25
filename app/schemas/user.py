@@ -74,3 +74,12 @@ class UserMessage(BaseModel):
 class UsersMessage(BaseModel):
     message: str
     data: Optional[List[User]] = None
+
+class UserListItem(BaseModel):
+    id: int
+    email: Optional[EmailStr] = None
+
+class AllUsersResponse(BaseModel):
+    message: str
+    data: List[UserListItem] = []
+    
