@@ -70,8 +70,9 @@ def google_auth(
         loguru.logger.info(f"created_user:{jsonable_encoder(user)}")
 
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        token_dict = {"user_id": user.id, "is_provider": user.is_provider}
         access_token = security.create_access_token(
-            user.id, expires_delta=access_token_expires
+            subject=token_dict, expires_delta=access_token_expires
         )
         print('access_token_expires',access_token_expires,access_token)
         # request.session["user"] = jsonable_encoder(user)
