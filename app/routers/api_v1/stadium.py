@@ -193,23 +193,16 @@ def create_stadium(
 @router.post("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
 def get_stadium_list_with_created_user(
     db: Session = Depends(deps.get_db),
-    filter_by_created_user: bool = True,
+    # filter_by_created_user: bool = True,
     # TODO: wait for user validation
-    current_user: models.User = Depends(deps.get_current_active_user)
+    # current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
     """
     Retrieve stadium list w/ or w/o created_user.
     """
     try:
               
-        if filter_by_created_user:
-           stadiums = crud.stadium.get_stadium_list(
-               db=db, user_id=current_user.id
-        )
-        else:
-            stadiums = crud.stadium.get_stadium_list(
-                db=db, user_id=None
-            )
+        stadiums = crud.stadium.get_stadium_list(db=db, user_id=None)
 
         stadiums_data = []
         for stadium_id, name, venue_name, picture, area,  max_number_of_people in stadiums:
