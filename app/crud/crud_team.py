@@ -9,7 +9,7 @@ from app.schemas.team import TeamCreate, TeamUpdate
 
 class CRUDTeam(CRUDBase[Team, TeamCreate, TeamUpdate]):
     def get_by_team_id(self, db: Session, *, team_id: int) -> Optional[Team]:
-        return db.query(Team).filter(Team.team_id == team_id).first()
+        return db.query(Team).filter(Team.id == team_id).first()
 
     def get_by_order_id(self, db: Session, *, order_id: int) -> Optional[Team]:
         return db.query(Team).filter(Team.order_id == order_id).first()
@@ -37,6 +37,16 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamUpdate]):
     
     def delete(self, db: Session, *, db_obj: Team):
         db.delete(db_obj)
+        db.commit()
+        return True
+    
+    def decrease_current_member_number(self, db: Session,* , team_id: int) -> bool:
+        team = db.query(Team).filter(Team.id == team_id).first()
+        if not team:
+            return False  # Team not found
+        # Decrease current_member_number by 1
+        team.current_member_number -= 1
+        # Commit the changes to the database
         db.commit()
         return True
 
