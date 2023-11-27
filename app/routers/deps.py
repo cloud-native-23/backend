@@ -29,7 +29,6 @@ def get_current_user(
     db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
 ) -> models.user:
     try:
-        print("in get_current_user")
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
@@ -42,7 +41,7 @@ def get_current_user(
             detail=f"{e}",
         )
 
-    user = crud.user.get(db, id=token_data.sub)
+    user = crud.user.get(db, id=token_data.user_id)
     if not user:
         raise HTTPException(status_code=204, detail="User not found")
 
