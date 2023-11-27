@@ -190,12 +190,9 @@ def create_stadium(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
+@router.get("/stadium-list/", response_model=schemas.stadium.StadiumListMessage)
 def get_stadium_list_with_created_user(
     db: Session = Depends(deps.get_db),
-    # filter_by_created_user: bool = True,
-    # TODO: wait for user validation
-    # current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
     """
     Retrieve stadium list w/ or w/o created_user.
