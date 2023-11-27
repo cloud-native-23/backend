@@ -75,7 +75,6 @@ class StadiumList(StadiumBase):
     area: Optional[float] = None
     max_number_of_people: Optional[int] = None
     current_people_count: Optional[int] = None
-    google_map_url: Optional[str] = None
 
 
 class StadiumListMessage(BaseModel):
