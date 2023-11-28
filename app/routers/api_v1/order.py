@@ -26,3 +26,19 @@ def get_rent_list(
 
     
     return {"orders": rent_list}
+
+@router.post("/order-cancel", response_model=schemas.OrderCancelResponse)
+def cancel_order(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    order_id: int = None
+):
+    
+    if crud.order.check_order_status(db=db, order_id=order_id):
+        cancel_result = crud.order.cancel_order(db=db, order_id=order_id)
+
+    else:
+        raise HTTPException(status_code=400, detail="Order is not available to cancel.")
+    
+
+    return {"message": "success", "order": cancel_result.__dict__}
