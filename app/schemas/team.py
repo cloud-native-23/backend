@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field
 
 from .order import OrderBase
 
+from .user import UserCredential
+
 # Shared properties
 class TeamBase(BaseModel):
     team_id: int = Field(alias='id')
@@ -33,6 +35,18 @@ class TeamUpdate(TeamBase):
 
 class TeamJointListResponse(BaseModel):
     team_joint_list: List[dict]
+
+class TeamJoinInfo(BaseModel):
+    team_id: int
+    team_member_emails: Optional[List[str]]
+
+class TeamWithTeamMemberInfo(TeamCreate):
+    order_id: int
+    team_members: Optional[List[UserCredential]]
+
+class TeamWithTeamMemberInfoMessage(BaseModel):
+    message: str
+    data: Optional[TeamWithTeamMemberInfo]
 
 # Additional properties to return via API
 
