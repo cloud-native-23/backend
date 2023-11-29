@@ -79,3 +79,79 @@ def get_rent_info(
             resultList.append(result)
 
     return {"message": "success", "data": resultList}
+
+@router.post("/rent", response_model=schemas.order.OrderWithTeamInfoMessage)
+def rent(
+    rent_obj_in: schemas.order.OrderCreateWithTeamInfo,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user)
+) -> Any:
+    """
+    Rent stadium_court for specific date and time. (Includes creating Order, Team, TeamMember)
+    """
+    stadium_court = crud.stadium_court.get_by_stadium_court_id(db=db, stadium_court_id=rent_obj_in.stadium_court_id)
+    if stadium_court is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Fail to rent stadium_court. No stadium_court data with stadium_court_id = {}.".format(rent_obj_in.stadium_court_id),
+        )
+    try: 
+         # create order
+        create_order_obj = models.order.Order(
+            stadium_court_id = rent_obj_in.stadium_court_id,
+            renter_id = current_user.id,
+            date = rent_obj_in.date,
+            start_time = rent_obj_in.start_time,
+            end_time = rent_obj_in.end_time,
+            status = 1 if rent_obj_in else 0,
+            is_matching = rent_obj_in.is_matching
+        )
+        db.add(create_order_obj)
+        db.flush() # flush to get autoincremented id
+        # create team
+        create_team_obj = models.team.Team(
+            order_id = create_order_obj.id,
+            max_number_of_member = rent_obj_in.max_number_of_member,
+            current_member_number = rent_obj_in.current_member_number,
+            level_requirement = rent_obj_in.level_requirement
+        )
+        db.add(create_team_obj)
+        db.flush() # flush to get autoincremented id
+        # create team_member
+        member_list = []
+        for member_email in rent_obj_in.team_member_emails:
+            member = db.query(User).filter(User.email == member_email).first()
+            member_list.append(member)
+            if member is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Fail to rent. No user data with email = {}.".format(member_email),
+                )
+            create_team_member_obj = models.team_member.TeamMember(
+                team_id = create_team_obj.id,
+                user_id = member.id,
+                status = True # 1
+            )
+            db.add(create_team_member_obj)
+        db.commit()
+
+        team_members = [schemas.user.UserCredential(name=x.name, email=x.email) for x in member_list]
+        data = schemas.order.OrderWithTeamInfo(
+            id = create_order_obj.id,
+            stadium_court_id = rent_obj_in.stadium_court_id,
+            date = rent_obj_in.date,
+            start_time = rent_obj_in.start_time,
+            end_time = rent_obj_in.end_time, 
+            current_member_number = rent_obj_in.current_member_number, 
+            max_number_of_member = rent_obj_in.max_number_of_member, 
+            is_matching = rent_obj_in.is_matching, 
+            level_requirement = rent_obj_in.level_requirement, 
+            team_id = create_team_obj.id,
+            team_members = team_members
+        )
+        return {'message': 'success', 'data': data}
+    except Exception as e:
+        print('error >>> ', e)
+
+        return {'message': 'fail. error: {}'.format(e)}
+    
