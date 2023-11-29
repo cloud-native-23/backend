@@ -1,13 +1,16 @@
 from typing import Any, Dict, Optional, Union
 
-from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func, join
 from datetime import timedelta, datetime
 
 from app.crud.base import CRUDBase
 from app.models.order import Order
 from app.models.team import Team
 from app.models.stadium_court import StadiumCourt
+from app.models.stadium import Stadium
+from app.models.team_member import TeamMember
+from app.models.user import User
 from app.schemas.order import OrderCreate, OrderUpdate
 
 class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
@@ -110,6 +113,58 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             else:
                 #no order, can join
                 return True
+            
+    def get_user_order_history(
+            self, db: Session, *, user_id: int
+    ):
+        orders = (
+            db.query(Order.id, Order.date, Order.start_time, Order.end_time, Stadium.name, Stadium.venue_name, StadiumCourt.name, 
+                    Order.status, Team.current_member_number, Team.max_number_of_member
+            )
+            .join(StadiumCourt, Order.stadium_court_id == StadiumCourt.id)
+            .join(Stadium, StadiumCourt.stadium_id == Stadium.id)
+            .join(Team, Order.id == Team.order_id)
+            .filter(Order.renter_id == user_id)
+            .order_by(Order.date, Order.start_time)
+            .all()
+        )
+
+        order_history = []
+        for order in orders:
+            team_members = (
+                db.query(User.name, User.email)
+                .join(TeamMember, User.id == TeamMember.user_id)
+                .join(Team, TeamMember.team_id == Team.id)
+                .filter(Team.order_id == order[0])
+                .filter(TeamMember.status == 1)
+                .filter(TeamMember.user_id != user_id)
+                .all()
+            )
+            team_member_data = [{'name': name, 'email': email} for name, email in team_members]
+
+            if order[7] == 1:
+                status = "已核准"
+            else:
+                status = "已取消"
+
+            # Create a dictionary for the order
+            order_data = {
+                "order_id": order[0],
+                "order_time": order[1],  
+                "start_time": order[2], 
+                "end_time": order[3],
+                "stadium_name": order[4],  
+                "venue_name": order[5],
+                "court_name": order[6],  
+                "status": status, 
+                "current_member_number": order[8], 
+                "max_number_of_member": order[9], 
+                "team_members": team_member_data, 
+            }
+
+            order_history.append(order_data)
+
+        return order_history
 
 
 order = CRUDOrder(Order)

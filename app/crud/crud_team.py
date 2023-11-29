@@ -18,7 +18,7 @@ class CRUDTeam(CRUDBase[Team, TeamCreate, TeamUpdate]):
         db_obj = Team(
             order_id = obj_in.order_id,
             max_number_of_member = obj_in.max_number_of_member,
-            orig_member_number = obj_in.orig_member_number,
+            current_member_number = obj_in.current_member_number,
             level_requirement = obj_in.level_requirement,
         )
         db.add(db_obj)

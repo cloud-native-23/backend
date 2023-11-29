@@ -7,3 +7,7 @@ class LevelRequirement(enum.Enum):
     EASY_MEDIUM_HARD = 4
     MEDIUM_HARD = 5
     HARD = 6
+
+class RentStatus(enum.Enum):
+    Approved = 1
+    Cancelled = 0

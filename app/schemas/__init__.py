@@ -46,7 +46,9 @@ from .stadium_disable import (
 from .order import (
     OrderBase,
     OrderCreate,
-    OrderUpdate
+    OrderUpdate,
+    OrderRentInfo,
+    OrderRentResponse
 )
 from .team import(
     TeamBase,

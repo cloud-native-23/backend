@@ -2,7 +2,7 @@
 BaseModel.schema will return a dict of the schema
 while BaseModel.schema_json will return a JSON string representation of that dict.
 """
-from datetime import datetime
+from datetime import datetime, date
 
 from typing import List, Optional
 
@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from .stadium_court import StadiumCourtBase
 
-from .user import UserBase
+from .user import UserBase, UserCredential
 
 
 # Shared properties
@@ -25,7 +25,7 @@ class OrderBase(BaseModel):
 class OrderCreate(OrderBase):
     stadium_court_id: StadiumCourtBase
     renter_id: UserBase
-    datetime: datetime
+    date: date
     start_time: int = None
     end_time: int = None
     status: int = None
@@ -38,6 +38,21 @@ class OrderUpdate(OrderBase):
     status: int = None
     is_matching: bool
 
+class OrderRentInfo(OrderBase):
+    order_time: date
+    start_time: int = None
+    end_time: int = None
+    stadium_name: str
+    venue_name: str
+    court_name: str
+    status: str = None
+    current_member_number: int
+    max_number_of_member: int
+    team_members: Optional[List[UserCredential]] = None
+    
+
+class OrderRentResponse(BaseModel):
+    orders: List[OrderRentInfo]
 
 # Additional properties to return via API
 

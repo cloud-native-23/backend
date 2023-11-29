@@ -21,19 +21,18 @@ class TeamBase(BaseModel):
 class TeamCreate(TeamBase):
     order_id: OrderBase
     max_number_of_member: int = None
-    orig_member_number: int = None
+    current_member_number: int = None
     level_requirement: Optional[int] = None
 
 
 # Properties to receive via API on update
 class TeamUpdate(TeamBase):
     max_number_of_member: int = None
-    orig_member_number: int = None
+    current_member_number: int = None
     level_requirement: Optional[int] = None
 
 class TeamJointListResponse(BaseModel):
     team_joint_list: List[dict]
-
 
 # Additional properties to return via API
 
