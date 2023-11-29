@@ -56,7 +56,8 @@ from .team import(
     TeamUpdate,
     TeamJointListResponse,
     TeamJoinInfo,
-    TeamWithTeamMemberInfo
+    TeamInfo,
+    TeamInfoMessage
 )
 from .team_member import(
     TeamMemberBase,

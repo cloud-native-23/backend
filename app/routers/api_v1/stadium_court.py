@@ -80,7 +80,7 @@ def get_rent_info(
 
     return {"message": "success", "data": resultList}
 
-@router.post("/join", response_model=schemas.team.TeamWithTeamMemberInfoMessage)
+@router.post("/join", response_model=schemas.team.TeamInfoMessage)
 def join(
     join_obj_in: schemas.team.TeamJoinInfo, 
     db: Session = Depends(deps.get_db),
@@ -140,7 +140,7 @@ def join(
         #                 .filter(TeamMember.team_id == join_obj_in.team_id) \
         #                 .all()
         # team_members = [schemas.user.UserCredential(name=x.name, email=x.email) for x in team_members]
-        data = schemas.team.TeamWithTeamMemberInfo(
+        data = schemas.team.TeamInfo(
             id = team_obj.id,
             order_id = team_obj.order_id,
             max_number_of_member = team_obj.max_number_of_member,
@@ -149,7 +149,7 @@ def join(
             # team_members = team_members # renter is not in this list
         )
 
-        return {'message': 'success', 'data': data}
+        return {'message': 'success', 'team': data}
     
     except Exception as e:
         print('error >>> ', e)

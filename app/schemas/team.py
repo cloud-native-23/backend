@@ -40,13 +40,13 @@ class TeamJoinInfo(BaseModel):
     team_id: int
     team_member_emails: Optional[List[str]]
 
-class TeamWithTeamMemberInfo(TeamCreate):
+class TeamInfo(TeamCreate):
     order_id: int
-    team_members: Optional[List[UserCredential]]
+    # team_members: Optional[List[UserCredential]]
 
-class TeamWithTeamMemberInfoMessage(BaseModel):
+class TeamInfoMessage(BaseModel):
     message: str
-    data: Optional[TeamWithTeamMemberInfo]
+    team: Optional[TeamInfo]
 
 # Additional properties to return via API
 
