@@ -220,7 +220,7 @@ def get_stadium_list_with_created_user(
 def get_stadium(
     stadium_id: int,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user)
+    # current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
     """
     Retrieve stadium info with stadium_id.
@@ -251,6 +251,7 @@ def get_stadium(
         picture = stadium.picture,
         area = stadium.area,
         description = stadium.description,
+        google_map_url = stadium.google_map_url,
         created_user = stadium.created_user,
         max_number_of_people = stadium.max_number_of_people,
         stadium_courts = [schemas.StadiumCourtForInfo(id=x.id, name=x.name) for x in stadium_courts],
@@ -394,6 +395,7 @@ def update_stadium(
         orig_stadium.picture = stadium_obj_in.picture
         orig_stadium.area = stadium_obj_in.area
         orig_stadium.description = stadium_obj_in.description
+        orig_stadium.google_map_url = stadium_obj_in.google_map_url
         orig_stadium.max_number_of_people = stadium_obj_in.max_number_of_people
         db.add(orig_stadium)
         ### update stadium_courts ###
@@ -444,6 +446,7 @@ def update_stadium(
             picture = stadium_obj_in.picture,
             area = stadium_obj_in.area,
             description = stadium_obj_in.description,
+            google_map_url = stadium_obj_in.google_map_url,
             created_user = orig_stadium.created_user,
             max_number_of_people = stadium_obj_in.max_number_of_people,
             stadium_courts = [schemas.StadiumCourtForInfo(id=x.id, name=x.name) for x in crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=orig_stadium.id)],
