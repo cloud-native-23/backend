@@ -220,7 +220,7 @@ def get_stadium_list_with_created_user(
 def get_stadium(
     stadium_id: int,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user)
+    # current_user: models.User = Depends(deps.get_current_active_user)
 ) -> Any:
     """
     Retrieve stadium info with stadium_id.
@@ -251,6 +251,7 @@ def get_stadium(
         picture = stadium.picture,
         area = stadium.area,
         description = stadium.description,
+        google_map_url = stadium.google_map_url,
         created_user = stadium.created_user,
         max_number_of_people = stadium.max_number_of_people,
         stadium_courts = [schemas.StadiumCourtForInfo(id=x.id, name=x.name) for x in stadium_courts],
