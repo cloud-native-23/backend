@@ -54,7 +54,10 @@ from .team import(
     TeamBase,
     TeamCreate,
     TeamUpdate,
-    TeamJointListResponse
+    TeamJointListResponse,
+    TeamJoinInfo,
+    TeamInfo,
+    TeamInfoMessage
 )
 from .team_member import(
     TeamMemberBase,
