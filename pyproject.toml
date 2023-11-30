@@ -49,6 +49,7 @@ sqlalchemy-utils = "^0.41.1"
 anyio = "^3.6.2"
 pytest-asyncio = "^0.21.0"
 pytest-trio = "^0.8.0"
+aenum = "^3.1.15"
 
 
 
