@@ -50,7 +50,9 @@ from .order import (
     OrderRentInfo,
     OrderRentResponse, 
     OrderWithTeamInfo,
-    OrderWithTeamInfoMessage
+    OrderWithTeamInfoMessage,
+    OrderRentResponse,
+    OrderCancelResponse
 )
 from .team import(
     TeamBase,
