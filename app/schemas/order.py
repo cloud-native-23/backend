@@ -57,6 +57,28 @@ class OrderRentResponse(BaseModel):
 class OrderCancelResponse(BaseModel):
     message: str
     order: OrderCreate
+
+class OrderCreateWithTeamInfo(BaseModel):
+    stadium_court_id: int
+    date: date
+    start_time: int
+    end_time: int
+    current_member_number: int
+    max_number_of_member: int
+    is_matching: bool
+    level_requirement: int
+    team_member_emails: Optional[List[str]]
+
+class OrderWithTeamInfo(OrderCreateWithTeamInfo):
+    id: int
+    team_id: int
+    team_members: List[UserCredential]
+
+class OrderWithTeamInfoMessage(BaseModel):
+    message: str
+    data: Optional[OrderWithTeamInfo]
+
+
 # Additional properties to return via API
 
 
