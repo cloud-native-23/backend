@@ -23,14 +23,14 @@ class OrderBase(BaseModel):
 
 # Properties to receive via API on creation
 class OrderCreate(OrderBase):
-    stadium_court_id: StadiumCourtBase
-    renter_id: UserBase
-    date: date
+    stadium_court_id: int
+    renter_id: int
     start_time: int = None
     end_time: int = None
     status: int = None
     is_matching: bool
     created_time = datetime
+    date: date
 
 
 # Properties to receive via API on update
@@ -54,6 +54,9 @@ class OrderRentInfo(OrderBase):
 class OrderRentResponse(BaseModel):
     orders: List[OrderRentInfo]
 
+class OrderCancelResponse(BaseModel):
+    message: str
+    order: OrderCreate
 # Additional properties to return via API
 
 

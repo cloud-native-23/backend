@@ -165,6 +165,26 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             order_history.append(order_data)
 
         return order_history
-
+    
+    def check_order_status(
+            self, db: Session, *, order_id: int
+    ):
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if order and order.status == 1:
+            return True
+        else:
+            return False
+        
+    def cancel_order(
+            self, db: Session, *, order_id: int
+    ):
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if order:
+            order.status = 0
+            db.commit()
+            db.refresh(order)
+            return order
+        else:
+            return None
 
 order = CRUDOrder(Order)

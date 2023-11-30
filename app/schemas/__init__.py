@@ -48,7 +48,8 @@ from .order import (
     OrderCreate,
     OrderUpdate,
     OrderRentInfo,
-    OrderRentResponse
+    OrderRentResponse,
+    OrderCancelResponse
 )
 from .team import(
     TeamBase,
