@@ -34,14 +34,14 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
 
     
     def create(self, db: Session, *, obj_in: StadiumDisableCreate) -> StadiumDisable:
-        for session in obj_in.sessions:
-            db_obj = StadiumDisable(
-                stadium_id=obj_in.stadium_id,
-                date=session.date,
-                start_time=session.start_time,
-                end_time=session.start_time+1,
-            )
-            db.add(db_obj)
+        
+        db_obj = StadiumDisable(
+            stadium_id=obj_in.stadium_id,
+            date=obj_in.date,
+            start_time=obj_in.start_time,
+            end_time=obj_in.start_time+1,
+        )
+        db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
         return db_obj
