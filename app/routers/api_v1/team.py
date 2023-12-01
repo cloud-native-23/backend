@@ -56,6 +56,7 @@ def get_join_list(
             "current_member_number": team.current_member_number,
             "max_number_of_member": team.max_number_of_member,
             "renter_name": renter.name,
+            "renter_email": renter.email,
             "join_status": join_status
         }
 
