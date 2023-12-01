@@ -70,6 +70,7 @@ def get_stadium_availability(
                     headcount_and_level_checking_result = crud.order.headcount_and_level_requirement_checking(
                         db=db, stadium_id=stadium_id, current_date=current_date, start_time=start_time, headcount= headcount, level_requirement = level_requirement
                     )
+                    
                     if booking_result == 'all_court_be_booked':
                         availability_data["day_{}".format(i + 1)][str(start_time)] = "Booked"
                     elif booking_result == 'none_be_booked':

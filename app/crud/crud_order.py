@@ -89,8 +89,6 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             .all()
         )
         court_ids = [court_id for (court_id,) in court_ids_subquery]
-        #true的條件：至少有一個場地是true
-        #true條件：沒有order
         for court_id in court_ids:
         # Check if there is an order for the court within the specified time range
             order = (
