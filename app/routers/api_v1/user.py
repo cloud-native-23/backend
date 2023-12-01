@@ -107,13 +107,14 @@ def update_user_profile(
 
 
 @router.get("/get-all-users", response_model=schemas.user.AllUsersResponse)
-def get_all_users(
-    db: Session = Depends(deps.get_db)
+def get_all_user_except_provider_and_current_user(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    all_user = crud.user.get_all_user(db=db)
+    all_user_except_provider_and_current_user = crud.user.get_all_user_except_provider_and_current_user(db=db,current_user=current_user )
     user_list_items = [
         schemas.user.UserListItem(id=user.id, email=user.email)
-        for user in all_user
+        for user in all_user_except_provider_and_current_user
     ]
     return {"message": "success", "data": user_list_items}
 

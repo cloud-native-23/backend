@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union,List
 # from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -21,6 +21,16 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     
     def get_all_user(self, db: Session)-> Optional[User]:
         return db.query(User.id, User.email).all()
+    
+    def get_all_user_except_provider_and_current_user(self, db: Session, current_user: User
+        ) -> List[Optional[User]]:
+        return (
+            db.query(User)
+            .filter(User.id != current_user.id)  # Exclude current user
+            .filter(User.is_provider != True)  # Exclude users with is_provider set to True
+            .all()
+        )
+
 
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
         if obj_in.password:
