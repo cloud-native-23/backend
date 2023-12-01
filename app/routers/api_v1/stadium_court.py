@@ -142,7 +142,7 @@ def rent(
             create_team_member_obj = models.team_member.TeamMember(
                 team_id = create_team_obj.id,
                 user_id = member.id,
-                status = True # 1
+                status = 1
             )
             db.add(create_team_member_obj)
         db.commit()
