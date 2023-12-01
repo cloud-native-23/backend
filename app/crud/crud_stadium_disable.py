@@ -74,4 +74,21 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
             .first() is not None
         )
     
+    def generate_time_slots(self, start_date: date, start_time: int, end_date: date, end_time: int, stadium_open_hour: int, stadium_close_hour: int):
+    
+
+        current_datetime = datetime.combine(start_date, datetime.min.time()) + timedelta(hours=start_time)
+
+        result = []
+        while current_datetime < datetime.combine(end_date, datetime.min.time()) + timedelta(hours=end_time):
+            current_date = current_datetime.date()
+            current_hour = current_datetime.hour
+
+            if stadium_open_hour <= current_hour < stadium_close_hour:
+                result.append({'date': current_date, 'start_time': current_hour})
+
+            current_datetime += timedelta(hours=1)
+
+        return result
+    
 stadium_disable = CRUDStadiumDisable(StadiumDisable)

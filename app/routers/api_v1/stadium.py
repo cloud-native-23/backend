@@ -11,7 +11,7 @@ from app import crud, models, schemas
 from app.core import security
 from app.core.config import settings
 from app.routers import deps
-from app.utils import generate_time_slots
+
 import traceback
 
 
@@ -314,7 +314,7 @@ def disable_stadium(
     
     statium_available_times = crud.stadium_available_time.get_all_by_stadium_id(db=db, stadium_id=StadiumDisableContinue_in.stadium_id)
 
-    disable_sessions = generate_time_slots(
+    disable_sessions = crud.stadium_disable.generate_time_slots(
         StadiumDisableContinue_in.start_date, StadiumDisableContinue_in.start_time, StadiumDisableContinue_in.end_date, 
         StadiumDisableContinue_in.end_time, statium_available_times[0].start_time, statium_available_times[0].end_time)
     
