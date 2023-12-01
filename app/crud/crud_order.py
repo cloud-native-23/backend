@@ -82,12 +82,15 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     def headcount_and_level_requirement_checking(
         self, db: Session, *,  stadium_id: int, current_date: datetime, start_time: int, headcount:int, level_requirement:int
     ):
+        court_available_count = 0
         court_ids_subquery = (
             db.query(StadiumCourt.id)
             .filter(StadiumCourt.stadium_id == stadium_id)
             .all()
         )
         court_ids = [court_id for (court_id,) in court_ids_subquery]
+        #true的條件：至少有一個場地是true
+        #true條件：沒有order
         for court_id in court_ids:
         # Check if there is an order for the court within the specified time range
             order = (
@@ -103,16 +106,15 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
                 if order.is_matching == True:
                     #has order and is_matching,  checking limit about headcount and level
                     team = db.query(Team).filter(Team.order_id == order.id, Team.level_requirement<= level_requirement).first()
-                    if (team.max_number_of_member - team.current_member_number) >= headcount:
-                        return True
-                    else:
-                        return False
-                elif order.is_matching == False:
-                    #order is not for matching
-                    return False
+                    if team:
+                        if (team.max_number_of_member - team.current_member_number) >= headcount:
+                            court_available_count = court_available_count+1
             else:
-                #no order, can join
-                return True
+                court_available_count = court_available_count+1
+        if court_available_count>0:
+            return True
+        else:
+            return False
             
     def get_user_order_history(
             self, db: Session, *, user_id: int
