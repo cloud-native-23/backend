@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, Date, DateTime, Integer, ForeignKey
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql import func
 from app.database.base_class import Base
 
@@ -8,9 +9,10 @@ class Order(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     stadium_court_id = Column(
         Integer,
-        ForeignKey("StadiumCourt.id", ondelete="CASCADE"),
-        nullable=False
+        ForeignKey("StadiumCourt.id", ondelete="SET NULL"),
+        nullable=True
     )
+    stadium_court = relationship('StadiumCourt', backref=backref('Order', passive_deletes=True))
     renter_id = Column(
         Integer,
         ForeignKey("User.id", ondelete="CASCADE")
