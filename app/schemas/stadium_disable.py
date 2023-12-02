@@ -20,7 +20,9 @@ class StadiumDisableSessions(BaseModel):
     start_time: int
 
 class StadiumDisableCreate(StadiumDisableBase):
-    sessions: List[StadiumDisableSessions]
+    date: date
+    start_time: int
+    end_time: int
 
 # Properties to receive via API on update
 class StadiumDisableUpdate(StadiumDisableBase):
@@ -41,6 +43,12 @@ class StadiumDisableInDBBase(StadiumDisableBase):
 # Additional properties to return via API
 
 # Disable return message
-class StadiumDisableResponse(BaseModel):
+class StadiumDisableResponse(StadiumDisableBase):
     message: str
-    data: Optional[StadiumDisableCreate] = None
+    sessions: Optional[List[StadiumDisableSessions]] = None
+
+class StadiumDisableContinue(StadiumDisableBase):
+    start_date: date
+    start_time: int
+    end_date: date
+    end_time: int

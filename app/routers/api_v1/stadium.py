@@ -11,6 +11,7 @@ from app import crud, models, schemas
 from app.core import security
 from app.core.config import settings
 from app.routers import deps
+
 import traceback
 
 
@@ -290,42 +291,68 @@ def delete_stadium(
 
 @router.post("/disable", response_model=schemas.stadium_disable.StadiumDisableResponse)
 def disable_stadium(
-    StadiumDisableCreate_in: schemas.stadium_disable.StadiumDisableCreate,
+    StadiumDisableContinue_in: schemas.stadium_disable.StadiumDisableContinue,
     db: Session = Depends(deps.get_db),
     current_user: models.user = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Disable stadium with stadium_id.
     """
-    if (StadiumDisableCreate_in.stadium_id == '' or StadiumDisableCreate_in.stadium_id is None):
+    if (StadiumDisableContinue_in.stadium_id == '' or StadiumDisableContinue_in.stadium_id is None):
         raise HTTPException(
             status_code=400,
             detail="Fail to disable stadium. Missing parameter: stadium_id"
         )
     
     stadium = crud.stadium.get_by_stadium_id(
-        db=db, stadium_id=StadiumDisableCreate_in.stadium_id)
+        db=db, stadium_id=StadiumDisableContinue_in.stadium_id)
     if not stadium:
         raise HTTPException(
             status_code=400,
             detail="No stadium to disable.",
         )
     
-    for session in StadiumDisableCreate_in.sessions:
-        stadium_disable = crud.stadium_disable.is_disabled(
-            db=db, stadium_id=StadiumDisableCreate_in.stadium_id, date=session.date, start_time=session.start_time
-        )
-        if stadium_disable:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Stadium is already disabled at the time.  Stadium ID: {StadiumDisableCreate_in.stadium_id}, Date: {session.date}, Start Time: {session.start_time}",
-            )
+    statium_available_times = crud.stadium_available_time.get_all_by_stadium_id(db=db, stadium_id=StadiumDisableContinue_in.stadium_id)
+
+    disable_sessions = crud.stadium_disable.generate_time_slots(
+        StadiumDisableContinue_in.start_date, StadiumDisableContinue_in.start_time, StadiumDisableContinue_in.end_date, 
+        StadiumDisableContinue_in.end_time, statium_available_times[0].start_time, statium_available_times[0].end_time)
+    
+    if disable_sessions:
+    
+        return_data = []
         
-    isDisableSuccessfully = crud.stadium_disable.create(db=db, obj_in=StadiumDisableCreate_in)
-    if isDisableSuccessfully:
-        return {'message': 'success', 'data': StadiumDisableCreate_in}
+        for session in disable_sessions:
+            stadium_disable = crud.stadium_disable.is_disabled(
+                db=db, stadium_id=StadiumDisableContinue_in.stadium_id, date=session['date'], start_time=session['start_time']
+            )
+            if stadium_disable:
+                    continue
+
+            disable_obj_in = schemas.stadium_disable.StadiumDisableCreate(
+                stadium_id=StadiumDisableContinue_in.stadium_id,
+                date=session['date'],
+                start_time=session['start_time'],
+                end_time=session['start_time']+1
+            )
+            
+            disable_obj = crud.stadium_disable.create(db=db, obj_in=disable_obj_in)
+            if disable_obj:
+                return_data.append({'date': disable_obj.date, 'start_time': disable_obj.start_time})
+            else:
+                return {'message': 'fail', 'data': None}
     else:
-        return {'message': 'fail', 'data': StadiumDisableCreate_in}
+        raise HTTPException(
+            status_code=400,
+            detail="The disable time is not valid.",
+        )
+    
+    if return_data:
+        message = 'success'
+    else:
+        message = 'Stadium is already disabled at the time.'
+
+    return {'message': message, 'stadium_id': StadiumDisableContinue_in.stadium_id,'sessions': return_data}
     
 @router.delete("/undisable", response_model=schemas.stadium_disable.StadiumDisableResponse)
 def disable_stadium(
@@ -355,10 +382,8 @@ def disable_stadium(
             db=db, stadium_id=StadiumUndisableCreate_in.stadium_id, date=session.date, start_time=session.start_time
         )
         if not stadium_disable:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Stadium is not disabled at the specified time. Stadium ID: {StadiumUndisableCreate_in.stadium_id}, Date: {session.date}, Start Time: {session.start_time}",
-            )
+            continue
+         
         
         isUndisableSuccessfully = crud.stadium_disable.delete_by_stadium_id_and_session(
             db=db, stadium_id=StadiumUndisableCreate_in.stadium_id, date=session.date, start_time=session.start_time
