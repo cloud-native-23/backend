@@ -457,7 +457,7 @@ def update_stadium(
             # update status of orders under this court to canceled
             orders = db.query(models.order.Order).filter(models.order.Order.stadium_court_id == disabled_court.id).all()
             for order in orders:
-                order.status = 2
+                order.status = 0
                 db.add(order)
 
         # if updated max_number_of_people is smaller than before => cancel
@@ -472,7 +472,7 @@ def update_stadium(
                     .filter(models.stadium_court.StadiumCourt.is_enabled == True) \
                     .all()
             for exceeding_order in orders_need_to_be_updated:
-                exceeding_order.status = 2
+                exceeding_order.status = 0
                 db.add(exceeding_order)
         
         ### update stadium_available_times ###
