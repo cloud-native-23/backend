@@ -36,6 +36,13 @@ def get_rent_info(
     # 因為timetable已經考慮過available_time跟disable_time，故這裡輸入的input param一定是至少有一個場地可以滿足使用者需求的，直接考慮stadium_court跟order+team就好
     # 一個場地同一時段只會租給一組人，loop stadium_court找出是否已出租+租場地的人的資訊+隊伍資訊
     # 需考慮headcount
+    # NEW ADD: 考慮headcount是否大於stadium max_number_of_people
+    db_stadium = crud.stadium.get_by_stadium_id(db=db, stadium_id=stadium_id)
+    if db_stadium is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Fail to find stadium with stadium_id = {}.".format(stadium_id),
+        )
     resultList = []
     # Step 1: Get stadium_courts by stadium_id
     stadium_courts = crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=stadium_id)
@@ -46,6 +53,7 @@ def get_rent_info(
             .join(Order, StadiumCourt.id == Order.stadium_court_id) \
             .join(Team, Order.id == Team.order_id) \
             .join(User, Order.renter_id == User.id) \
+            .filter(StadiumCourt.is_enabled == True) \
             .filter(StadiumCourt.id == stadium_court.id) \
             .filter(Order.start_time == start_time) \
             .filter(Order.date == date) \
@@ -65,7 +73,8 @@ def get_rent_info(
                 current_member_number = result.current_member_number,
                 max_number_of_member = result.max_number_of_member,
                 level_requirement = LevelRequirement(result.level_requirement).value.split('_'), # convert level_requirement from code to string
-                status = '' # '加入' if result.max_number_of_member - result.current_member_number >= headcount else ('已滿' if result.max_number_of_member == result.current_member_number else '無法加入')
+                status = '', # '加入' if result.max_number_of_member - result.current_member_number >= headcount else ('已滿' if result.max_number_of_member == result.current_member_number else '無法加入')
+                status_description = ''
             )
             # status check
             # if not enough place or level_requirement is not match => 無法加入; if current_member_number == max_number_of_member => 已滿; other => 加入
@@ -77,17 +86,23 @@ def get_rent_info(
                         result.status = '加入'
                     elif result.max_number_of_member - result.current_member_number < headcount:
                         result.status = '無法加入'
+                        result.status_description = '欲加入人數大於隊伍剩餘可加入人數'
                 # level_requirement is not match
                 else:
                     result.status = '無法加入'
+                    result.status_description = '能力程度不符'
             resultList.append(result)
         # stadium_court is not rented for this time
         else:
             result = schemas.stadium_court.StadiumCourtWithRentInfo(
                 stadium_court_id = stadium_court.id,
                 name = stadium_court.name,
-                status = '租借'
+                status = '租借',
+                status_description = ''
             )
+            if headcount > db_stadium.max_number_of_people: # 欲加入人數 > stadium_court最大人數
+                result.status = '無法加入'
+                result.status_description = '欲加入人數大於場地最大人數'
             resultList.append(result)
 
     return {"message": "success", "data": resultList}
@@ -102,10 +117,10 @@ def rent(
     Rent stadium_court for specific date and time. (Includes creating Order, Team, TeamMember)
     """
     stadium_court = crud.stadium_court.get_by_stadium_court_id(db=db, stadium_court_id=rent_obj_in.stadium_court_id)
-    if stadium_court is None:
+    if stadium_court is None or stadium_court.is_enabled == False:
         raise HTTPException(
             status_code=400,
-            detail="Fail to rent stadium_court. No stadium_court data with stadium_court_id = {}.".format(rent_obj_in.stadium_court_id),
+            detail="Fail to rent stadium_court. No stadium_court data with stadium_court_id = {} or stadium_court is already disabled.".format(rent_obj_in.stadium_court_id),
         )
     try: 
          # create order
@@ -222,18 +237,12 @@ def join(
                 db.add(create_team_member_obj)
         db.commit()
 
-        # team_members = db.query(User.name, User.email) \
-        #                 .join(TeamMember, User.id == TeamMember.user_id) \
-        #                 .filter(TeamMember.team_id == join_obj_in.team_id) \
-        #                 .all()
-        # team_members = [schemas.user.UserCredential(name=x.name, email=x.email) for x in team_members]
         data = schemas.team.TeamInfo(
             id = team_obj.id,
             order_id = team_obj.order_id,
             max_number_of_member = team_obj.max_number_of_member,
             current_member_number = team_obj.current_member_number,
             level_requirement = team_obj.level_requirement,
-            # team_members = team_members # renter is not in this list
         )
 
         return {'message': 'success', 'team': data}

@@ -14,6 +14,7 @@ class StadiumCourtBase(BaseModel):
     #auto increment doesn't need id
     stadium_court_id: Optional[int] = Field(validation_alias='id') # None
     name: str
+    is_enabled: bool = True
     # max_number_of_people: int
 
     class Config:
@@ -63,6 +64,7 @@ class StadiumCourtWithRentInfo(StadiumCourtBase):
     max_number_of_member: Optional[int] = None
     level_requirement: Optional[List[str]] = None
     status: str
+    status_description: str
 
 class StadiumCourtWithRentInfoMessage(BaseModel):
     message: str

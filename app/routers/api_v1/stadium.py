@@ -429,28 +429,33 @@ def update_stadium(
             if stadium_court_in.id is None:
                 create_stadium_court = models.stadium_court.StadiumCourt(
                     stadium_id = orig_stadium.id,
-                    name = stadium_court_in.name
+                    name = stadium_court_in.name,
+                    is_enabled = True
                 )
                 db.add(create_stadium_court)
             else:
-                court = db.query(models.stadium_court.StadiumCourt).filter(models.stadium_court.StadiumCourt.id == stadium_court_in.id).first()
+                court = db.query(models.stadium_court.StadiumCourt) \
+                    .filter(models.stadium_court.StadiumCourt.id == stadium_court_in.id, models.stadium_court.StadiumCourt.is_enabled == True).first()
                 # if not in db => new add
                 if court is None:
                     create_stadium_court = models.stadium_court.StadiumCourt(
                         stadium_id = orig_stadium.id,
-                        name = stadium_court_in.name
+                        name = stadium_court_in.name,
+                        is_enabled = True
                     )
                     db.add(create_stadium_court)
                 else: # update
                     court.name = stadium_court_in.name
                     db.add(court)
         # stadium_courts in db but not in api input => delete
-        db_stadium_courts = db.query(models.stadium_court.StadiumCourt).filter(models.stadium_court.StadiumCourt.stadium_id == stadium_obj_in.stadium_id).all()
-        stadium_courts_to_delete = [x for x in db_stadium_courts if x.id not in [y.id for y in stadium_obj_in.stadium_courts]]
-        for delete_court in stadium_courts_to_delete:
-            db.delete(delete_court)
+        db_stadium_courts = db.query(models.stadium_court.StadiumCourt) \
+            .filter(models.stadium_court.StadiumCourt.stadium_id == stadium_obj_in.stadium_id, models.stadium_court.StadiumCourt.is_enabled == True).all()
+        stadium_courts_to_disable = [x for x in db_stadium_courts if x.id not in [y.id for y in stadium_obj_in.stadium_courts]]
+        for disabled_court in stadium_courts_to_disable:
+            disabled_court.is_enabled = False
+            db.add(disabled_court)
             # update status of orders under this court to canceled
-            orders = db.query(models.order.Order).filter(models.order.Order.stadium_court_id == delete_court.id).all()
+            orders = db.query(models.order.Order).filter(models.order.Order.stadium_court_id == disabled_court.id).all()
             for order in orders:
                 order.status = 2
                 db.add(order)
@@ -464,6 +469,7 @@ def update_stadium(
                     .join(models.team.Team, models.order.Order.id == models.team.Team.order_id) \
                     .filter(models.stadium.Stadium.id == stadium_obj_in.stadium_id) \
                     .filter(models.team.Team.max_number_of_member > stadium_obj_in.max_number_of_people) \
+                    .filter(models.stadium_court.StadiumCourt.is_enabled == True) \
                     .all()
             for exceeding_order in orders_need_to_be_updated:
                 exceeding_order.status = 2

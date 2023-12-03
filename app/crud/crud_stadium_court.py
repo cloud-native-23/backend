@@ -22,17 +22,23 @@ class CRUDStadiumCourt(CRUDBase[StadiumCourt, StadiumCourtCreate, StadiumCourtUp
         )
     
     def get_all_by_stadium_id(
-        self, db: Session, *, stadium_id: int
+        self, db: Session, *, stadium_id: int, filter_out_disabled: bool = True
     ) -> Optional[StadiumCourt]:
-        return (
-            db.query(StadiumCourt).filter(StadiumCourt.stadium_id == stadium_id).all()
-        )
+        if filter_out_disabled:
+            return (
+                db.query(StadiumCourt).filter(StadiumCourt.stadium_id == stadium_id, StadiumCourt.is_enabled == True).all()
+            )
+        else:
+            return (
+                db.query(StadiumCourt).filter(StadiumCourt.stadium_id == stadium_id).all()
+            )
 
     
     def create(self, db: Session, *, name: str, stadium_id: int) -> StadiumCourt:
         db_obj = StadiumCourt(
             stadium_id=stadium_id,
             name=name,
+            is_enabled=True
         )
         db.add(db_obj)
         db.commit()
@@ -41,7 +47,7 @@ class CRUDStadiumCourt(CRUDBase[StadiumCourt, StadiumCourtCreate, StadiumCourtUp
 
     def delete_by_stadium_id(self, db: Session, *, stadium_id: str):
         if stadium_id is not None or stadium_id != "":
-            db_objs = self.get_all_by_stadium_id(stadium_id)
+            db_objs = self.get_all_by_stadium_id(stadium_id, filter_out_disabled=False)
             for db_obj in db_objs:
                 db.delete(db_obj)
             db.commit()
