@@ -356,45 +356,66 @@ def disable_stadium(
     
 @router.delete("/undisable", response_model=schemas.stadium_disable.StadiumDisableResponse)
 def disable_stadium(
-    StadiumUndisableCreate_in: schemas.stadium_disable.StadiumDisableCreate,
+    StadiumUndisableContinue_in: schemas.stadium_disable.StadiumDisableContinue,
     db: Session = Depends(deps.get_db),
     current_user: models.user = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Undisable stadium.
     """
-    if (StadiumUndisableCreate_in.stadium_id == '' or StadiumUndisableCreate_in.stadium_id is None):
+    if (StadiumUndisableContinue_in.stadium_id == '' or StadiumUndisableContinue_in.stadium_id is None):
         raise HTTPException(
             status_code=400,
             detail="Fail to undisable stadium. Missing parameter: stadium_id"
         )
     
     stadium = crud.stadium.get_by_stadium_id(
-        db=db, stadium_id=StadiumUndisableCreate_in.stadium_id)
+        db=db, stadium_id=StadiumUndisableContinue_in.stadium_id)
     if not stadium:
         raise HTTPException(
             status_code=400,
             detail="No stadium to undisable.",
         )
     
-    for session in StadiumUndisableCreate_in.sessions:
-        stadium_disable = crud.stadium_disable.is_disabled(
-            db=db, stadium_id=StadiumUndisableCreate_in.stadium_id, date=session.date, start_time=session.start_time
-        )
-        if not stadium_disable:
-            continue
-         
-        
-        isUndisableSuccessfully = crud.stadium_disable.delete_by_stadium_id_and_session(
-            db=db, stadium_id=StadiumUndisableCreate_in.stadium_id, date=session.date, start_time=session.start_time
-        )
-        if not isUndisableSuccessfully:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Fail to undisable stadium. Stadium ID: {StadiumUndisableCreate_in.stadium_id}, Date: {session.date}, Start Time: {session.start_time}",
+    statium_available_times = crud.stadium_available_time.get_all_by_stadium_id(db=db, stadium_id=StadiumUndisableContinue_in.stadium_id)
+
+    undisable_sessions = crud.stadium_disable.generate_time_slots(
+        StadiumUndisableContinue_in.start_date, StadiumUndisableContinue_in.start_time, StadiumUndisableContinue_in.end_date, 
+        StadiumUndisableContinue_in.end_time, statium_available_times[0].start_time, statium_available_times[0].end_time)
+    
+    if undisable_sessions:  
+
+        return_data = []
+
+        for session in undisable_sessions:
+            stadium_disable = crud.stadium_disable.is_disabled(
+                db=db, stadium_id=StadiumUndisableContinue_in.stadium_id, date=session['date'], start_time=session['start_time']
             )
-        
-    return {'message': 'success', 'data': StadiumUndisableCreate_in}
+            if not stadium_disable:
+                continue
+            
+            undisable_obj = crud.stadium_disable.delete_by_stadium_id_and_session(
+                db=db, stadium_id=StadiumUndisableContinue_in.stadium_id, date=session['date'], start_time=session['start_time']
+            )
+            if undisable_obj:
+                return_data.append({'date': undisable_obj.date, 'start_time': undisable_obj.start_time})
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Fail to undisable stadium. Stadium ID: {StadiumUndisableContinue_in.stadium_id}, Date: {session['date']}, Start Time: {session['start_time']}",
+                )
+            
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="The undisable time is not valid.",
+        )
+    if return_data:
+            message = 'success'
+    else:
+        message = 'Stadium is not disabled at the time.'
+
+    return {'message': message, 'stadium_id': StadiumUndisableContinue_in.stadium_id,'sessions': return_data}
 
 @router.put("/", response_model=schemas.stadium.StadiumInfoMessage)
 def update_stadium(

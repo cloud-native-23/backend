@@ -47,16 +47,16 @@ class CRUDStadiumDisable(CRUDBase[StadiumDisable, StadiumDisableCreate, StadiumD
         return db_obj
 
     
-    def delete_by_stadium_id_and_session(self, db: Session, *, stadium_id: int, date: date, start_time: int) -> bool:
+    def delete_by_stadium_id_and_session(self, db: Session, *, stadium_id: int, date: date, start_time: int) -> StadiumDisable:
         #in update stadium page, if update stadium_court, call this 
         stadium_disable = db.query(StadiumDisable).filter_by(stadium_id=stadium_id, date=date, 
                                                                 start_time=start_time).first()
         if stadium_disable is not None:
             db.delete(stadium_disable)
             db.commit()
-            return True
+            return stadium_disable
         else:
-            return False
+            return None
     
     def is_disabled(
         self, db: Session, *, stadium_id: int, date: date, start_time: int
