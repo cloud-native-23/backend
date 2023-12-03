@@ -40,6 +40,7 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
         stadium_court_ids = (
             db.query(StadiumCourt.id)
             .filter(StadiumCourt.stadium_id == stadium_id)
+            .filter(StadiumCourt.is_enabled == True)
             .all()
         )
         

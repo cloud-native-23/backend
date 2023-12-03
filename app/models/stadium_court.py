@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.sql import func
 from app.database.base_class import Base
 
@@ -12,3 +12,4 @@ class StadiumCourt(Base):
         nullable=False
     )
     name = Column(String, nullable=False)
+    is_enabled = Column(Boolean, nullable=False, default=True)

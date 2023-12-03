@@ -433,7 +433,8 @@ def update_stadium(
             detail="Fail to update stadium. No stadium data with stadium_id = {}.".format(stadium_obj_in.stadium_id),
         )
     try:
-        # TODO: what if provider remove a court already reserved ???
+        # save orig_max_number_of_people for later using
+        orig_stadium_max_number_of_people = orig_stadium.max_number_of_people
         ### update stadium ###
         orig_stadium.name = stadium_obj_in.name
         orig_stadium.venue_name = stadium_obj_in.venue_name
@@ -449,26 +450,52 @@ def update_stadium(
             if stadium_court_in.id is None:
                 create_stadium_court = models.stadium_court.StadiumCourt(
                     stadium_id = orig_stadium.id,
-                    name = stadium_court_in.name
+                    name = stadium_court_in.name,
+                    is_enabled = True
                 )
                 db.add(create_stadium_court)
             else:
-                court = crud.stadium_court.get_by_stadium_court_id(db=db, stadium_court_id=stadium_court_in.id)
+                court = db.query(models.stadium_court.StadiumCourt) \
+                    .filter(models.stadium_court.StadiumCourt.id == stadium_court_in.id, models.stadium_court.StadiumCourt.is_enabled == True).first()
                 # if not in db => new add
                 if court is None:
                     create_stadium_court = models.stadium_court.StadiumCourt(
                         stadium_id = orig_stadium.id,
-                        name = stadium_court_in.name
+                        name = stadium_court_in.name,
+                        is_enabled = True
                     )
                     db.add(create_stadium_court)
                 else: # update
                     court.name = stadium_court_in.name
                     db.add(court)
         # stadium_courts in db but not in api input => delete
-        db_stadium_courts = crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=stadium_obj_in.stadium_id)
-        stadium_courts_to_delete = [x for x in db_stadium_courts if x.id not in [y.id for y in stadium_obj_in.stadium_courts]]
-        for delete_court in stadium_courts_to_delete:
-            db.delete(delete_court)
+        db_stadium_courts = db.query(models.stadium_court.StadiumCourt) \
+            .filter(models.stadium_court.StadiumCourt.stadium_id == stadium_obj_in.stadium_id, models.stadium_court.StadiumCourt.is_enabled == True).all()
+        stadium_courts_to_disable = [x for x in db_stadium_courts if x.id not in [y.id for y in stadium_obj_in.stadium_courts]]
+        for disabled_court in stadium_courts_to_disable:
+            disabled_court.is_enabled = False
+            db.add(disabled_court)
+            # update status of orders under this court to canceled
+            orders = db.query(models.order.Order).filter(models.order.Order.stadium_court_id == disabled_court.id).all()
+            for order in orders:
+                order.status = 0
+                db.add(order)
+
+        # if updated max_number_of_people is smaller than before => cancel
+        # check if existing team with max_number_of_member exceeding new max_number_of_people
+        if orig_stadium_max_number_of_people is not None and orig_stadium_max_number_of_people > stadium_obj_in.max_number_of_people:
+            orders_need_to_be_updated = db.query(models.order.Order) \
+                    .join(models.stadium_court.StadiumCourt, models.order.Order.stadium_court_id == models.stadium_court.StadiumCourt.id) \
+                    .join(models.stadium.Stadium, models.stadium.Stadium.id == models.stadium_court.StadiumCourt.stadium_id) \
+                    .join(models.team.Team, models.order.Order.id == models.team.Team.order_id) \
+                    .filter(models.stadium.Stadium.id == stadium_obj_in.stadium_id) \
+                    .filter(models.team.Team.max_number_of_member > stadium_obj_in.max_number_of_people) \
+                    .filter(models.stadium_court.StadiumCourt.is_enabled == True) \
+                    .all()
+            for exceeding_order in orders_need_to_be_updated:
+                exceeding_order.status = 0
+                db.add(exceeding_order)
+        
         ### update stadium_available_times ###
         update_available_times = stadium_obj_in.available_times
         # delete all first

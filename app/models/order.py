@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, Date, DateTime, Integer, ForeignKey
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql import func
 from app.database.base_class import Base
 
