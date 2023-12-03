@@ -355,7 +355,7 @@ def disable_stadium(
     return {'message': message, 'stadium_id': StadiumDisableContinue_in.stadium_id,'sessions': return_data}
     
 @router.delete("/undisable", response_model=schemas.stadium_disable.StadiumDisableResponse)
-def disable_stadium(
+def undisable_stadium(
     StadiumUndisableContinue_in: schemas.stadium_disable.StadiumDisableContinue,
     db: Session = Depends(deps.get_db),
     current_user: models.user = Depends(deps.get_current_active_user),
