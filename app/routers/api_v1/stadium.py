@@ -321,6 +321,7 @@ def disable_stadium(
     if disable_sessions:
     
         return_data = []
+        cancel_order_list = []      
         
         for session in disable_sessions:
             stadium_disable = crud.stadium_disable.is_disabled(
@@ -339,8 +340,23 @@ def disable_stadium(
             disable_obj = crud.stadium_disable.create(db=db, obj_in=disable_obj_in)
             if disable_obj:
                 return_data.append({'date': disable_obj.date, 'start_time': disable_obj.start_time})
+
+                stadium_courts = crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=StadiumDisableContinue_in.stadium_id)
+          
+                for stadium_court in stadium_courts:
+                    stadium_court_id = stadium_court.id
+                    orders_to_be_cancelled = crud.order.get_all_id_by_date_and_start_time(
+                        db=db, stadium_court_id=stadium_court_id ,date=disable_obj.date, start_time=disable_obj.start_time
+                    )
+
+                    if orders_to_be_cancelled:
+                        for order_to_be_cancelled in orders_to_be_cancelled:
+                            order_id = order_to_be_cancelled.id
+                            cancel_order = crud.order.cancel_order_by_id(db=db, order_id=order_id)
+                            cancel_order_list.append(cancel_order.id)
             else:
                 return {'message': 'fail', 'data': None}
+            
     else:
         raise HTTPException(
             status_code=400,
@@ -352,9 +368,9 @@ def disable_stadium(
     else:
         message = 'Stadium is already disabled at the time.'
 
-    return {'message': message, 'stadium_id': StadiumDisableContinue_in.stadium_id,'sessions': return_data}
+    return {'message': message, 'stadium_id': StadiumDisableContinue_in.stadium_id,'sessions': return_data, 'cancel_orders': cancel_order_list}
     
-@router.delete("/undisable", response_model=schemas.stadium_disable.StadiumDisableResponse)
+@router.delete("/undisable", response_model=schemas.stadium_disable.StadiumUnDisableResponse)
 def undisable_stadium(
     StadiumUndisableContinue_in: schemas.stadium_disable.StadiumDisableContinue,
     db: Session = Depends(deps.get_db),
