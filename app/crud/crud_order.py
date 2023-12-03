@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Union
 
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, join
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 
 from app.crud.base import CRUDBase
 from app.models.order import Order
@@ -22,6 +22,9 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     
     def get_all_by_stadium_court_id(self, db: Session, *, stadium_court_id: int) -> Optional[Order]:
         return db.query(Order).filter(Order.stadium_court_id == stadium_court_id).all()
+    
+    def get_all_id_by_date_and_start_time(self, db: Session, *, stadium_court_id: int, date: date, start_time: int) -> Optional[Order]:
+        return db.query(Order).filter(Order.stadium_court_id == stadium_court_id, Order.date == date, Order.start_time == start_time).all()
 
     def create(self, db: Session, *, obj_in: OrderCreate) -> Order:
         db_obj = Order(
@@ -177,7 +180,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         else:
             return False
         
-    def cancel_order(
+    def cancel_order_by_id(
             self, db: Session, *, order_id: int
     ):
         order = db.query(Order).filter(Order.id == order_id).first()
