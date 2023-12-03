@@ -87,6 +87,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         court_ids_subquery = (
             db.query(StadiumCourt.id)
             .filter(StadiumCourt.stadium_id == stadium_id)
+            .filter(StadiumCourt.is_enabled == True)
             .all()
         )
         court_ids = [court_id for (court_id,) in court_ids_subquery]
