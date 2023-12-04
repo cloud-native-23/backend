@@ -15,7 +15,7 @@ import traceback
 
 router = APIRouter()
     
-@router.post("/leave", response_model=schemas.stadium_disable.StadiumDisableResponse)
+@router.post("/leave", response_model=schemas.team_member.TeamMemberLeave)
 def leave(
     team_id: int,
     db: Session = Depends(deps.get_db),
@@ -41,4 +41,7 @@ def leave(
     if leave_successfully and decrease_current_member_number_successfully:
         return {'message': 'success', 'data': None}
     else:
-        return {'message': 'fail', 'data': None}
+        raise HTTPException(
+            status_code=400,
+            detail="No team to leave.",
+        )
