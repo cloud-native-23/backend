@@ -46,6 +46,11 @@ class StadiumDisableInDBBase(StadiumDisableBase):
 class StadiumDisableResponse(StadiumDisableBase):
     message: str
     sessions: Optional[List[StadiumDisableSessions]] = None
+    cancel_orders: Optional[List[int]] = None
+
+class StadiumUnDisableResponse(StadiumDisableBase):
+    message: str
+    sessions: Optional[List[StadiumDisableSessions]] = None
 
 class StadiumDisableContinue(StadiumDisableBase):
     start_date: date
