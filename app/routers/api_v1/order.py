@@ -35,7 +35,7 @@ def cancel_order(
 ):
     
     if crud.order.check_order_status(db=db, order_id=order_id):
-        cancel_result = crud.order.cancel_order(db=db, order_id=order_id)
+        cancel_result = crud.order.cancel_order_by_id(db=db, order_id=order_id)
 
     else:
         raise HTTPException(status_code=400, detail="Order is not available to cancel.")
