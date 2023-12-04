@@ -58,11 +58,12 @@ test_session = scoped_session(
 
 def get_user_authentication_headers(session, email):
     user = crud.user.get_by_email(db=session, email=email)
-    user = jsonable_encoder(user)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    token_dict = {"user_id": user.id, "is_provider": user.is_provider}
     access_token = security.create_access_token(
-        user["id"], expires_delta=access_token_expires
+        token_dict, expires_delta=access_token_expires
     )
+    # print('access_token >>> ', access_token)
     headers = {"Authorization": f"Bearer {access_token}"}
     return headers
 

@@ -15,7 +15,7 @@ from app.schemas.order import OrderCreate, OrderUpdate
 
 class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
     def get_by_order_id(self, db: Session, *, order_id: int) -> Optional[Order]:
-        return db.query(Order).filter(Order.order_id == order_id).first()
+        return db.query(Order).filter(Order.id == order_id).first()
     
     def get_all_by_renter_id(self, db: Session, *, renter_id: int) -> Optional[Order]:
         return db.query(Order).filter(Order.renter_id == renter_id).all()

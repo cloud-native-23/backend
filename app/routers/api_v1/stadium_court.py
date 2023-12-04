@@ -177,9 +177,10 @@ def rent(
             team_members = team_members
         )
         return {'message': 'success', 'data': data}
+    except HTTPException:
+        raise
     except Exception as e:
         print('error >>> ', e)
-
         return {'message': 'fail. error: {}'.format(e)}
 
 @router.post("/join", response_model=schemas.team.TeamInfoMessage)
@@ -246,7 +247,8 @@ def join(
         )
 
         return {'message': 'success', 'team': data}
+    except HTTPException:
+        raise
     except Exception as e:
         print('error >>> ', e)
-
         return {'message': 'fail. error: {}'.format(e)}
