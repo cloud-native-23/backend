@@ -6,7 +6,7 @@ from app.core.config import settings
 from app.database.base_class import Base
 
 SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@\
-{settings.POSTGRES_HOST}:{settings.DATABASE_PORT}/test{settings.POSTGRES_DB}"
+{settings.POSTGRES_HOST}:{settings.DATABASE_PORT}/test-{settings.POSTGRES_DB}"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 if not database_exists(SQLALCHEMY_DATABASE_URL):

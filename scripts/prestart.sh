@@ -9,8 +9,8 @@ docker-compose up -d
 docker-compose exec backend alembic upgrade head
 
 # Create initial data in DB
-docker-compose exec backend python3 -m app.initial_data
+# docker-compose exec backend python3 -m app.initial_data
 docker-compose exec backend python3 -m app.database.test.test_database
-docker-compose exec backend python3 -m app.database.test.initial_test_data
+# docker-compose exec backend python3 -m app.database.test.initial_test_data
 
 docker-compose down
