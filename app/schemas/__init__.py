@@ -66,5 +66,6 @@ from .team import(
 from .team_member import(
     TeamMemberBase,
     TeamMemberCreate,
-    TeamMemberUpdate
+    TeamMemberUpdate,
+    TeamMemberLeave
 )

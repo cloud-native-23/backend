@@ -46,8 +46,19 @@ class CRUDTeamMember(CRUDBase[TeamMember, TeamMemberCreate, TeamMemberUpdate]):
         return True
     
     def leave_team(self, db=Session, *, team_id:int, user_id: int):
-        db.query(TeamMember).filter(TeamMember.team_id == team_id, TeamMember.user_id == user_id).update({"status": 0})
+        rows_affected = (
+            db.query(TeamMember)
+            .filter(TeamMember.team_id == team_id, TeamMember.user_id == user_id)
+            .update({"status": 0})
+        )
+
+        # Commit the changes to the database
         db.commit()
-        return True
+
+        # Check if the update was successful (at least one row affected)
+        if rows_affected > 0:
+            return True
+        else:
+            return False
 
 team_member = CRUDTeamMember(TeamMember)

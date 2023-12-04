@@ -31,6 +31,8 @@ class TeamMemberCreate(TeamMemberBase):
 class TeamMemberUpdate(TeamMemberBase):
     pass
 
+class TeamMemberLeave(BaseModel):
+    message: str
 
 # Additional properties to return via API
 
