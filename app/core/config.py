@@ -19,6 +19,8 @@ class Settings(BaseSettings):
         "https://localhost:4200",
         "https://localhost:3000",
         "https://localhost:8080",
+        "https://104.199.134.61:3000",
+        "http://104.199.134.61:3000",
         # "http://backend.sdm-teamatch.com/",
         # "https://stag.sdm-teamatch.com/",
         # "https://sdm-teamatch.com/",

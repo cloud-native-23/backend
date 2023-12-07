@@ -31,6 +31,7 @@ def get_join_list(
         .join(models.User, models.User.id == models.Order.renter_id)
         .join(models.TeamMember, models.TeamMember.team_id == models.Team.id)
         .filter(models.TeamMember.user_id == current_user.id)
+        .order_by(models.Order.date, models.Order.start_time)
     )
 
     # Execute the query and fetch the results
