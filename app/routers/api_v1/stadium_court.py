@@ -26,9 +26,9 @@ def get_rent_info(
     start_time: int,
     # end_time: int,
     headcount: int,
-    level_requirement: int,
+    level_requirement: str,
     db: Session = Depends(deps.get_db),
-    # current_user: models.User = Depends(deps.get_current_active_user)
+    current_user: Optional[models.User] = Depends(deps.get_user_or_none)
 ) -> Any:
     """
     Retrieve stadium_court with used status.
@@ -49,7 +49,7 @@ def get_rent_info(
     # Step 2: Loop stadium_courts to find if court is already rented
     for stadium_court in stadium_courts:
         # query StadiumCourt, Order, Team
-        query = db.query(StadiumCourt.id.label('stadium_court_id'), StadiumCourt.name.label('stadium_court_name'), User.name.label('renter_name'), Team.id.label('team_id'), Team.current_member_number, Team.max_number_of_member, Team.level_requirement, Order.is_matching) \
+        query = db.query(StadiumCourt.id.label('stadium_court_id'), StadiumCourt.name.label('stadium_court_name'), Order.renter_id, User.name.label('renter_name'), Team.id.label('team_id'), Team.current_member_number, Team.max_number_of_member, Team.level_requirement, Order.is_matching) \
             .join(Order, StadiumCourt.id == Order.stadium_court_id) \
             .join(Team, Order.id == Team.order_id) \
             .join(User, Order.renter_id == User.id) \
@@ -68,6 +68,7 @@ def get_rent_info(
                 stadium_court_id = stadium_court.id,
                 name = stadium_court.name,
                 # is_matching = result.is_matching,
+                renter_id = result.renter_id,
                 renter_name = result.renter_name,
                 team_id = result.team_id,
                 current_member_number = result.current_member_number,
@@ -78,19 +79,32 @@ def get_rent_info(
             )
             # status check
             # if not enough place or level_requirement is not match => 無法加入; if current_member_number == max_number_of_member => 已滿; other => 加入
-            if result.max_number_of_member == result.current_member_number: # is_match = False的也會在這邊 (create Team的時候max_number_of_member會等於current_member_number)
-                result.status = '已滿'
-            else:
-                if orig_level_requirement_val <= level_requirement:
-                    if result.max_number_of_member - result.current_member_number >= headcount:
-                        result.status = '加入'
-                    elif result.max_number_of_member - result.current_member_number < headcount:
-                        result.status = '無法加入'
-                        result.status_description = '欲加入人數大於隊伍剩餘可加入人數'
-                # level_requirement is not match
-                else:
+            if current_user:
+                if result.renter_id == current_user.id:
                     result.status = '無法加入'
-                    result.status_description = '能力程度不符'
+                    result.status_description = '該時段租借者即為使用者'
+                # check if current_user is under this team
+                team_members = db.query(Team.id.label('team_id'), TeamMember.user_id.label('member_id')) \
+                  .join(TeamMember, Team.id == TeamMember.team_id) \
+                  .filter(Team.id == result.team_id).all()
+                for team_member in team_members:
+                    if team_member.member_id == current_user.id:
+                        result.status = '無法加入'
+                        result.status_description = '使用者已加入該隊伍'
+            if result.status == '': # 如果已因為使用者身分而無法加入則跳過下面的check
+                if result.max_number_of_member == result.current_member_number: # is_match = False的也會在這邊 (create Team的時候max_number_of_member會等於current_member_number)
+                    result.status = '已滿'
+                else:
+                    if LevelRequirement(orig_level_requirement_val).name.__contains__(level_requirement.upper()):
+                        if result.max_number_of_member - result.current_member_number >= headcount:
+                            result.status = '加入'
+                        elif result.max_number_of_member - result.current_member_number < headcount:
+                            result.status = '無法加入'
+                            result.status_description = '欲加入人數大於隊伍剩餘可加入人數'
+                    # level_requirement is not match
+                    else:
+                        result.status = '無法加入'
+                        result.status_description = '能力程度不符'
             resultList.append(result)
         # stadium_court is not rented for this time
         else:
