@@ -21,13 +21,17 @@ def get_formatted_html(result):
     '''.format(result)
     return html_format
 
-async def send_email(title, mail_content, recipients: list):
+def send_email(subject, mail_content, recipients: list):
     result_html = get_formatted_html(mail_content)
     msg = MIMEText(result_html, 'html') 
-    msg["Subject"] = title
+    msg["Subject"] = subject
     msg["To"] = ", ".join(recipients)
     msg["From"] = settings.ADMIN_EMAIL
     smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
     smtp_server.login(settings.ADMIN_NAME, settings.ADMIN_PASSWORD)
     smtp_server.sendmail(msg["From"], recipients, msg.as_string())
     smtp_server.quit()
+
+def send_email_background(background_tasks: BackgroundTasks, subject, mail_content, recipients: list):
+    background_tasks.add_task(
+       send_email, subject, mail_content, recipients)
