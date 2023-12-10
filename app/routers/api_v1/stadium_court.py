@@ -136,11 +136,24 @@ def rent(
         db.add(create_order_obj)
         db.flush() # flush to get autoincremented id
         # create team
+        # convert level_requirement from str array to integer value
+        level_requirement_value = 0
+        if len(rent_obj_in.level_requirement) == 1:
+            level_requirement_value = LevelRequirement[rent_obj_in.level_requirement[0].upper()].values[1]
+        elif len(rent_obj_in.level_requirement) == 3:
+            level_requirement_value = LevelRequirement['EASY_MEDIUM_HARD'].values[1]
+        else:
+            for enum in LevelRequirement:    
+                if enum.name == 'EASY_MEDIUM_HARD':
+                    continue        
+                if all(level.upper() in enum.name for level in rent_obj_in.level_requirement): # check if all level_requirements are included in enum.name
+                    level_requirement_value = enum.values[1]
+                    break
         create_team_obj = models.team.Team(
             order_id = create_order_obj.id,
             max_number_of_member = rent_obj_in.max_number_of_member,
             current_member_number = rent_obj_in.current_member_number,
-            level_requirement = rent_obj_in.level_requirement
+            level_requirement = level_requirement_value # rent_obj_in.level_requirement
         )
         db.add(create_team_obj)
         db.flush() # flush to get autoincremented id
@@ -172,7 +185,7 @@ def rent(
             current_member_number = rent_obj_in.current_member_number, 
             max_number_of_member = rent_obj_in.max_number_of_member, 
             is_matching = rent_obj_in.is_matching, 
-            level_requirement = rent_obj_in.level_requirement, 
+            level_requirement = LevelRequirement(level_requirement_value).value.split('_'),
             team_id = create_team_obj.id,
             team_members = team_members
         )
