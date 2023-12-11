@@ -66,7 +66,7 @@ class OrderCreateWithTeamInfo(BaseModel):
     current_member_number: int
     max_number_of_member: int
     is_matching: bool
-    level_requirement: int
+    level_requirement: List[str]
     team_member_emails: Optional[List[str]]
 
 class OrderWithTeamInfo(OrderCreateWithTeamInfo):
