@@ -58,6 +58,7 @@ class StadiumCourtCreateWithMessage(BaseModel):
 
 class StadiumCourtWithRentInfo(StadiumCourtBase):
     # is_matching: Optional[bool] = None
+    renter_id: Optional[int] = None
     renter_name: Optional[str] = None
     team_id: Optional[int] = None
     current_member_number: Optional[int] = None

@@ -76,3 +76,35 @@ def get_current_active_superuser(
 #         return user
 #     else:
 #         raise HTTPException(status_code=401, detail="Could not validate credentials.")
+
+optional_oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl=f"{settings.API_V1_STR}/login/access-token",
+    auto_error=False
+)
+
+def get_user_or_none(
+    db: Session = Depends(get_db), token: str or None = Depends(optional_oauth2_scheme)
+):
+    """
+    Return the current active user if is present (using the token Bearer) or None
+    """
+    try:
+        if token is None:
+            return None
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
+        )
+        loguru.logger.info(f"payload: {payload}")
+        token_data = schemas.TokenPayload(**payload)
+    except (jwt.JWTError, ValidationError) as e:
+        loguru.logger.error(f"Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"{e}",
+        )
+
+    user = crud.user.get(db, id=token_data.user_id)
+    if not user:
+        raise HTTPException(status_code=204, detail="User not found")
+
+    return user
