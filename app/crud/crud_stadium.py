@@ -29,6 +29,13 @@ class CRUDStadium(CRUDBase[Stadium, StadiumCreate, StadiumUpdate]):
             db.query(Stadium).filter(Stadium.id == stadium_id).first()
         )
     
+    def get_by_stadium_court_id(
+        self, db: Session, *, stadium_court_id: int
+    ) -> Optional[Stadium]:
+        return (
+            db.query(Stadium).join(StadiumCourt, StadiumCourt.stadium_id == Stadium.id).filter(StadiumCourt.id == stadium_court_id).first()
+        )
+    
     # get current people in stadium
     def get_stadium_current_people_count(
         self,

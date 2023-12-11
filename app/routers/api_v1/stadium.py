@@ -3,7 +3,7 @@ from typing import Any, Optional
 from datetime import timedelta, datetime
 
 import requests
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, BackgroundTasks
 #from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -11,6 +11,7 @@ from app import crud, models, schemas
 from app.core import security
 from app.core.config import settings
 from app.routers import deps
+from app.email.send_email import send_email_background
 
 import traceback
 
@@ -292,6 +293,7 @@ def delete_stadium(
 @router.post("/disable", response_model=schemas.stadium_disable.StadiumDisableResponse)
 def disable_stadium(
     StadiumDisableContinue_in: schemas.stadium_disable.StadiumDisableContinue,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(deps.get_db),
     current_user: models.user = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -356,6 +358,24 @@ def disable_stadium(
                             cancel_order_list.append(cancel_order.id)
             else:
                 return {'message': 'fail', 'data': None}
+            
+        stadium_info = crud.stadium.get_by_stadium_id(db=db, stadium_id=StadiumDisableContinue_in.stadium_id)
+        for order in cancel_order_list:
+            team_member_emails = crud.order.get_order_member_email(db=db, order_id=order)
+            order_info = crud.order.get_by_order_id(db=db, order_id=order)
+            stadium_court_info = crud.stadium_court.get_by_stadium_court_id(db=db, stadium_court_id=order_info.stadium_court_id)
+            for email in team_member_emails:
+                send_email_background(
+                    background_tasks,
+                    '訂單取消通知',
+                    '因場館於該時段暫時關閉，<br>訂單已被取消！<br><br>'
+                    '訂單資訊：<br>'
+                    '日期: ' + str(order_info.date) + '<br>'
+                    '時間: ' + str(order_info.start_time) + ':00-' + str(order_info.start_time + 1) + ':00<br>'
+                    '地點: ' + stadium_info.name + ' ' + stadium_info.venue_name + ' ' + stadium_court_info.name ,
+                    [str(email)]
+                )
+
             
     else:
         raise HTTPException(
