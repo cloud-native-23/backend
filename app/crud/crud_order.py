@@ -191,5 +191,32 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             return order
         else:
             return None
+        
+    def get_order_member_email(
+            self, db: Session, *, order_id:int
+    ):
+        email_list = (
+            db.query(User.email)
+            .join(TeamMember, TeamMember.user_id == User.id)
+            .join(Team, TeamMember.team_id == Team.id)
+            .join(Order, Team.order_id == Order.id)
+            .filter(Order.id == order_id)
+            .filter(TeamMember.status == 1)
+            .all()
+        )
+
+        renter_email = (
+            db.query(User.email)
+            .join(Order, Order.renter_id == User.id)
+            .filter(Order.id == order_id)
+            .first()
+        )
+
+        emails = [email[0] for email in email_list if email[0] is not None]
+
+        if renter_email and renter_email[0]:
+            emails.append(renter_email[0])
+
+        return emails
 
 order = CRUDOrder(Order)

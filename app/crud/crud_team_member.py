@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from app.crud.base import CRUDBase
 from app.models.team_member import TeamMember
 from app.schemas.team_member import TeamMemberCreate, TeamMemberUpdate
-from app.models.team import Team
 
 class CRUDTeamMember(CRUDBase[TeamMember, TeamMemberCreate, TeamMemberUpdate]):
     def get_by_team_member_id(self, db: Session, *, team_member_id: int) -> Optional[TeamMember]:
