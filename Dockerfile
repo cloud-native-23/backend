@@ -10,6 +10,7 @@ WORKDIR /backend
 RUN pip install poetry==1.4.2
 COPY --from=requirements-stage /tmp/requirements.txt ./backend/requirements.txt
 RUN pip install --upgrade -r ./backend/requirements.txt
+COPY . .
 # CMD ["python", "-m", "uvicorn", "--host", "0.0.0.0", "--port", "8000", "main:app", "--reload"]
 # CMD ["gunicorn", "main:app", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
 CMD ["python", "start.py"]
