@@ -4,6 +4,9 @@ from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
 from app.models.team_member import TeamMember
+from app.models.team import Team
+from app.models.user import User
+from app.models.order import Order
 from app.schemas.team_member import TeamMemberCreate, TeamMemberUpdate
 
 class CRUDTeamMember(CRUDBase[TeamMember, TeamMemberCreate, TeamMemberUpdate]):
@@ -59,5 +62,39 @@ class CRUDTeamMember(CRUDBase[TeamMember, TeamMemberCreate, TeamMemberUpdate]):
             return True
         else:
             return False
+        
+    def get_all_team_member_email_by_team_id(self, db=Session, *, team_id:int):
+        # team_members = db.query(TeamMember).filter(TeamMember.team_id == team_id).all()
+        # team_member_emails = [db.query(User.email).filter(User.id == member.user_id).scalar() for member in team_members]
+        # renters = (
+        #     db.query(User.email)
+        #     .filter(User.id == Team.renter_id)
+        #     .join(Team, Team.id == team_id)
+        #     .all()
+        # )
+
+
+        # return team_member_emails
+    
+
+        team_members = db.query(TeamMember).filter(TeamMember.team_id == team_id).all()
+
+        # Collect email addresses of team members
+        team_member_emails = [db.query(User.email).filter(User.id == member.user_id).scalar() for member in team_members]
+
+        order = (
+            db.query(Order)
+            .join(Team, Order.id == Team.order_id)
+            .filter(Team.id == team_id)
+            .first()
+        )
+        if order and order.renter_id:
+            renter = (
+                db.query(User)
+                .filter(User.id == order.renter_id)
+                .first()
+            )
+        all_emails = [renter.email] + team_member_emails
+        return all_emails
 
 team_member = CRUDTeamMember(TeamMember)
