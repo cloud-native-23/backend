@@ -13,7 +13,11 @@ from app.core.config import settings
 from app.routers import deps
 from app.enums import LevelRequirement
 from app.email.send_email import send_email_background
-
+from app.models.stadium import Stadium
+from app.models.stadium_available_time import StadiumAvailableTime
+from app.models.stadium_court import StadiumCourt
+from app.models.order import Order
+from app.models.team import Team
 import traceback
 
 
@@ -444,6 +448,7 @@ def undisable_stadium(
 
 @router.put("/", response_model=schemas.stadium.StadiumInfoMessage)
 def update_stadium(
+    background_tasks: BackgroundTasks,
     stadium_obj_in: schemas.stadium.StadiumUpdateAdditionalInfo,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user)
@@ -473,18 +478,18 @@ def update_stadium(
         ### update stadium_courts ###
         for stadium_court_in in stadium_obj_in.stadium_courts:
             if stadium_court_in.id is None:
-                create_stadium_court = models.stadium_court.StadiumCourt(
+                create_stadium_court = StadiumCourt(
                     stadium_id = orig_stadium.id,
                     name = stadium_court_in.name,
                     is_enabled = True
                 )
                 db.add(create_stadium_court)
             else:
-                court = db.query(models.stadium_court.StadiumCourt) \
-                    .filter(models.stadium_court.StadiumCourt.id == stadium_court_in.id, models.stadium_court.StadiumCourt.is_enabled == True).first()
+                court = db.query(StadiumCourt) \
+                    .filter(StadiumCourt.id == stadium_court_in.id, StadiumCourt.is_enabled == True).first()
                 # if not in db => new add
                 if court is None:
-                    create_stadium_court = models.stadium_court.StadiumCourt(
+                    create_stadium_court = StadiumCourt(
                         stadium_id = orig_stadium.id,
                         name = stadium_court_in.name,
                         is_enabled = True
@@ -494,14 +499,14 @@ def update_stadium(
                     court.name = stadium_court_in.name
                     db.add(court)
         # stadium_courts in db but not in api input => delete
-        db_stadium_courts = db.query(models.stadium_court.StadiumCourt) \
-            .filter(models.stadium_court.StadiumCourt.stadium_id == stadium_obj_in.stadium_id, models.stadium_court.StadiumCourt.is_enabled == True).all()
+        db_stadium_courts = db.query(StadiumCourt) \
+            .filter(StadiumCourt.stadium_id == stadium_obj_in.stadium_id, StadiumCourt.is_enabled == True).all()
         stadium_courts_to_disable = [x for x in db_stadium_courts if x.id not in [y.id for y in stadium_obj_in.stadium_courts]]
         for disabled_court in stadium_courts_to_disable:
             disabled_court.is_enabled = False
             db.add(disabled_court)
             # update status of orders under this court to canceled
-            orders = db.query(models.order.Order).filter(models.order.Order.stadium_court_id == disabled_court.id).all()
+            orders = db.query(Order).filter(Order.stadium_court_id == disabled_court.id).all()
             for order in orders:
                 order.status = 0
                 db.add(order)
@@ -509,13 +514,13 @@ def update_stadium(
         # if updated max_number_of_people is smaller than before => cancel
         # check if existing team with max_number_of_member exceeding new max_number_of_people
         if orig_stadium_max_number_of_people is not None and orig_stadium_max_number_of_people > stadium_obj_in.max_number_of_people:
-            orders_need_to_be_updated = db.query(models.order.Order) \
-                    .join(models.stadium_court.StadiumCourt, models.order.Order.stadium_court_id == models.stadium_court.StadiumCourt.id) \
-                    .join(models.stadium.Stadium, models.stadium.Stadium.id == models.stadium_court.StadiumCourt.stadium_id) \
-                    .join(models.team.Team, models.order.Order.id == models.team.Team.order_id) \
-                    .filter(models.stadium.Stadium.id == stadium_obj_in.stadium_id) \
-                    .filter(models.team.Team.max_number_of_member > stadium_obj_in.max_number_of_people) \
-                    .filter(models.stadium_court.StadiumCourt.is_enabled == True) \
+            orders_need_to_be_updated = db.query(Order) \
+                    .join(StadiumCourt, Order.stadium_court_id == StadiumCourt.id) \
+                    .join(Stadium, Stadium.id == StadiumCourt.stadium_id) \
+                    .join(Team, Order.id == Team.order_id) \
+                    .filter(Stadium.id == stadium_obj_in.stadium_id) \
+                    .filter(Team.max_number_of_member > stadium_obj_in.max_number_of_people) \
+                    .filter(StadiumCourt.is_enabled == True) \
                     .all()
             for exceeding_order in orders_need_to_be_updated:
                 exceeding_order.status = 0
@@ -524,10 +529,10 @@ def update_stadium(
         ### update stadium_available_times ###
         update_available_times = stadium_obj_in.available_times
         # delete all first
-        db.query(models.stadium_available_time.StadiumAvailableTime).filter(models.stadium_available_time.StadiumAvailableTime.stadium_id == stadium_obj_in.stadium_id).delete()
+        db.query(StadiumAvailableTime).filter(StadiumAvailableTime.stadium_id == stadium_obj_in.stadium_id).delete()
         # create new available_times
         for weekday in update_available_times.weekdays:
-            create_available_time = models.stadium_available_time.StadiumAvailableTime(
+            create_available_time = StadiumAvailableTime(
                 stadium_id = orig_stadium.id,
                 weekday = weekday,
                 start_time = update_available_times.start_time,
@@ -550,6 +555,43 @@ def update_stadium(
             stadium_courts = [schemas.StadiumCourtForInfo(id=x.id, name=x.name) for x in crud.stadium_court.get_all_by_stadium_id(db=db, stadium_id=orig_stadium.id)],
             available_times = stadium_obj_in.available_times
         )
+
+        # send mail => only send mail after successfully commit
+        for disabled_court in stadium_courts_to_disable:
+            canceled_orders_related_data = db.query(Order.date, Order.start_time, Order.end_time, StadiumCourt.name.label('stadium_court_name'), Stadium.name, Stadium.venue_name, Team.id.label('team_id')) \
+                         .join(StadiumCourt, Order.stadium_court_id == StadiumCourt.id) \
+                         .join(Stadium, StadiumCourt.stadium_id == Stadium.id) \
+                         .join(Team, Order.id == Team.order_id) \
+                         .filter(Order.stadium_court_id == disabled_court.id) \
+                         .all()
+            for order_related_data in canceled_orders_related_data:
+                # get team member emails
+                member_emails = crud.team_member.get_all_team_member_email_by_team_id(db=db, team_id=order_related_data.team_id)
+                mail_content = '因租借場地已被下架，<br>訂單已被取消！<br><br>訂單資訊：<br>日期：{}<br>時間：{}<br>地點：{}<br>' \
+                        .format(str(order_related_data.date), 
+                                '{}:00-{}:00'.format(order_related_data.start_time, order_related_data.end_time), 
+                                '{} {} {}'.format(order_related_data.name, order_related_data.venue_name, order_related_data.stadium_court_name))
+                send_email_background(background_tasks, 'Stadium Matching - 訂單取消通知', mail_content, recipients=member_emails)
+
+        # if updated max_number_of_people is smaller than before => cancel
+        # check if existing team with max_number_of_member exceeding new max_number_of_people
+        if orig_stadium_max_number_of_people is not None and orig_stadium_max_number_of_people > stadium_obj_in.max_number_of_people:
+            canceled_orders_related_data = db.query(Order.date, Order.start_time, Order.end_time, StadiumCourt.name.label('stadium_court_name'), Stadium.name, Stadium.venue_name, Team.id.label('team_id')) \
+                    .join(StadiumCourt, Order.stadium_court_id == StadiumCourt.id) \
+                    .join(Stadium, Stadium.id == StadiumCourt.stadium_id) \
+                    .join(Team, Order.id == Team.order_id) \
+                    .filter(Stadium.id == stadium_obj_in.stadium_id) \
+                    .filter(Team.max_number_of_member > stadium_obj_in.max_number_of_people) \
+                    .filter(StadiumCourt.is_enabled == True) \
+                    .all()
+            for order_related_data in canceled_orders_related_data:
+                # get team member emails
+                member_emails = crud.team_member.get_all_team_member_email_by_team_id(db=db, team_id=order_related_data.team_id)
+                mail_content = '因租借場地之最大使用人數調降，<br>隊伍人數超過場地之最大使用人數，<br>訂單已被取消！<br><br>訂單資訊：<br>日期：{}<br>時間：{}<br>地點：{}<br>' \
+                        .format(str(order_related_data.date), 
+                                '{}:00-{}:00'.format(order_related_data.start_time, order_related_data.end_time), 
+                                '{} {} {}'.format(order_related_data.name, order_related_data.venue_name, order_related_data.stadium_court_name))
+                send_email_background(background_tasks, 'Stadium Matching - 訂單取消通知', mail_content, recipients=member_emails)
 
         return {'message': 'success', 'data': data}
     except Exception as e:

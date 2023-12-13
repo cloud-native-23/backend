@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.routers import deps
 from app.utils import get_weekday
 from app.enums import LevelRequirement
+from app.models.stadium import Stadium
 from app.models.stadium_court import StadiumCourt
 from app.models.order import Order
 from app.models.team import Team
@@ -124,6 +125,7 @@ def get_rent_info(
 
 @router.post("/rent", response_model=schemas.order.OrderWithTeamInfoMessage)
 def rent(
+    background_tasks: BackgroundTasks,
     rent_obj_in: schemas.order.OrderCreateWithTeamInfo,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user)
@@ -204,6 +206,25 @@ def rent(
             team_id = create_team_obj.id,
             team_members = team_members
         )
+        # send mail to related users
+        # renter
+        related_data = db.query(Order.date, Order.start_time, Order.end_time, StadiumCourt.name.label('stadium_court_name'), Stadium.name, Stadium.venue_name, User.email.label('renter_email'), User.name.label('renter_name')) \
+                         .join(StadiumCourt, Order.stadium_court_id == StadiumCourt.id) \
+                         .join(Stadium, StadiumCourt.stadium_id == Stadium.id) \
+                         .join(User, Order.renter_id == User.id) \
+                         .filter(Order.id == data.id) \
+                         .first()
+        mail_content = '<br><br>隊伍及場地租借資訊：<br>日期：{}<br>時間：{}<br>地點：{}<br>租借者：{}<br>隊伍人數：{}<br>' \
+                        .format(str(related_data.date), 
+                                '{}:00-{}:00'.format(related_data.start_time, related_data.end_time), 
+                                '{} {} {}'.format(related_data.name, related_data.venue_name, related_data.stadium_court_name),
+                                related_data.renter_name,
+                                '{}/{}'.format(data.current_member_number, data.max_number_of_member))
+        send_email_background(background_tasks, 'Stadium Matching - 成功租借場地通知', '已成功租借場地！' + mail_content, recipients=[current_user.email])
+        # team members
+        recipients = [x.email for x in team_members]
+        send_email_background(background_tasks, 'Stadium Matching - 成功加入隊伍通知', '已成功加入隊伍！' + mail_content, recipients=recipients)
+
         return {'message': 'success', 'data': data}
     except HTTPException:
         raise
@@ -213,9 +234,10 @@ def rent(
 
 @router.post("/join", response_model=schemas.team.TeamInfoMessage)
 def join(
+    background_tasks: BackgroundTasks,
     join_obj_in: schemas.team.TeamJoinInfo,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_active_user)
+    current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Join existing team.
@@ -274,14 +296,41 @@ def join(
             level_requirement = team_obj.level_requirement,
         )
 
+        # send mail to related users
+        # joined members
+        related_data = db.query(Order.date, Order.start_time, Order.end_time, StadiumCourt.name.label('stadium_court_name'), Stadium.name, Stadium.venue_name, User.email.label('renter_email'), User.name.label('renter_name')) \
+                         .join(StadiumCourt, Order.stadium_court_id == StadiumCourt.id) \
+                         .join(Stadium, StadiumCourt.stadium_id == Stadium.id) \
+                         .join(User, Order.renter_id == User.id) \
+                         .filter(Order.id == data.order_id) \
+                         .first()
+        mail_content = '已成功加入隊伍！<br><br>隊伍及場地資訊：<br>日期：{}<br>時間：{}<br>地點：{}<br>租借者：{}<br>隊伍人數：{}<br>' \
+                        .format(str(related_data.date), 
+                                '{}:00-{}:00'.format(related_data.start_time, related_data.end_time), 
+                                '{} {} {}'.format(related_data.name, related_data.venue_name, related_data.stadium_court_name),
+                                related_data.renter_name,
+                                '{}/{}'.format(data.current_member_number, data.max_number_of_member))
+        joined_recipents = [current_user.email]
+        joined_recipents.extend(join_obj_in.team_member_emails)
+        send_email_background(background_tasks, 'Stadium Matching - 成功加入隊伍通知', mail_content, recipients=joined_recipents)
+        # members of joined team
+        # renter + team_member
+        team_member_objs = db.query(TeamMember.user_id.label('member_id'), User.email.label('member_email')) \
+                             .join(User, TeamMember.user_id == User.id) \
+                             .filter(TeamMember.team_id == team_obj.id) \
+                             .all()
+        recipients = [related_data.renter_email]
+        recipients.extend([x.member_email for x in team_member_objs if x.member_email not in joined_recipents])
+        joined_member_names = []
+        for joined_member_email in joined_recipents:
+            joined_member_name = crud.user.get_by_email(db=db, email=joined_member_email).name
+            joined_member_names.append(joined_member_name)
+        mail_content = '新成員 {} '.format(', '.join(joined_member_names)) + mail_content
+        send_email_background(background_tasks, 'Stadium Matching - 新隊員加入隊伍通知', mail_content, recipients=recipients)
+
         return {'message': 'success', 'team': data}
     except HTTPException:
         raise
     except Exception as e:
         print('error >>> ', e)
         return {'message': 'fail. error: {}'.format(e)}
-    
-@router.get('/send-email/backgroundtasks')
-def send_email_backgroundtasks(background_tasks: BackgroundTasks):
-    send_email_background(background_tasks, 'Hello World', '已成功租借場地: 2023-12-12 16:-00-17:00 綜合體育館桌球室-D場', ['whatamath0626@gmail.com'])
-    return {'message': 'Success'}

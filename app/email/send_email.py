@@ -25,7 +25,7 @@ def send_email(subject, mail_content, recipients: list):
     result_html = get_formatted_html(mail_content)
     msg = MIMEText(result_html, 'html') 
     msg["Subject"] = subject
-    msg["To"] = ", ".join(recipients)
+    # msg["To"] = ", ".join(recipients)
     msg["From"] = settings.ADMIN_EMAIL
     smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
     smtp_server.login(settings.ADMIN_NAME, settings.ADMIN_PASSWORD)
