@@ -19,9 +19,10 @@ test_client = test_client
 
 def test_leave(db_conn, test_client):
     email = "test4@gmail.com"
+    team_id = 18
     # correct
     response = test_client.post(
-        f"{settings.API_V1_STR}/team-member/leave?team_id=18",
+        f"{settings.API_V1_STR}/team-member/leave?team_id={team_id}",
         headers=get_user_authentication_headers(db_conn, email)
     )
     assert response.status_code == 200
@@ -35,10 +36,10 @@ def test_leave(db_conn, test_client):
     print('response.text',response.text)
     assert response.status_code == 422
     assert "value is not a valid integer" in response.json()["detail"][0]["msg"]
-
+    team_id = 30000
     # invalid team_id
     response = test_client.post(
-        f"{settings.API_V1_STR}/team-member/leave?team_id=30000",
+        f"{settings.API_V1_STR}/team-member/leave?team_id={team_id}",
         headers=get_user_authentication_headers(db_conn, email)
     )
     assert response.status_code == 400
