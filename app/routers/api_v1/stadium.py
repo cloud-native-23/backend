@@ -11,19 +11,13 @@ from app import crud, models, schemas
 from app.core import security
 from app.core.config import settings
 from app.routers import deps
-<<<<<<< HEAD
+from app.enums import LevelRequirement
+from app.email.send_email import send_email_background
 from app.models.stadium import Stadium
 from app.models.stadium_available_time import StadiumAvailableTime
 from app.models.stadium_court import StadiumCourt
 from app.models.order import Order
 from app.models.team import Team
-from app.models.team_member import TeamMember
-from app.models.user import User
-=======
-from app.enums import LevelRequirement
->>>>>>> d114ef9b6efbd441f68a6f52dc280d248485ef27
-from app.email.send_email import send_email_background
-
 import traceback
 
 
@@ -564,14 +558,15 @@ def update_stadium(
 
         # send mail => only send mail after successfully commit
         for disabled_court in stadium_courts_to_disable:
-            canceled_orders_related_data = db.query(Order.date, Order.start_time, Order.end_time, StadiumCourt.name.label('stadium_court_name'), Stadium.name, Stadium.venue_name) \
+            canceled_orders_related_data = db.query(Order.date, Order.start_time, Order.end_time, StadiumCourt.name.label('stadium_court_name'), Stadium.name, Stadium.venue_name, Team.id.label('team_id')) \
                          .join(StadiumCourt, Order.stadium_court_id == StadiumCourt.id) \
                          .join(Stadium, StadiumCourt.stadium_id == Stadium.id) \
+                         .join(Team, Order.id == Team.order_id) \
                          .filter(Order.stadium_court_id == disabled_court.id) \
                          .all()
             for order_related_data in canceled_orders_related_data:
                 # get team member emails
-                member_emails = [] # TODO: call crud
+                member_emails = crud.team_member.get_all_team_member_email_by_team_id(db=db, team_id=order_related_data.team_id)
                 mail_content = '因租借場地已被下架<br>訂單已被取消！<br><br>訂單資訊：<br>日期：{}<br>時間：{}<br>地點：{}<br>' \
                         .format(str(order_related_data.date), 
                                 '{}:00-{}:00'.format(order_related_data.start_time, order_related_data.end_time), 
@@ -581,7 +576,7 @@ def update_stadium(
         # if updated max_number_of_people is smaller than before => cancel
         # check if existing team with max_number_of_member exceeding new max_number_of_people
         if orig_stadium_max_number_of_people is not None and orig_stadium_max_number_of_people > stadium_obj_in.max_number_of_people:
-            canceled_orders_related_data = db.query(Order.date, Order.start_time, Order.end_time, StadiumCourt.name.label('stadium_court_name'), Stadium.name, Stadium.venue_name) \
+            canceled_orders_related_data = db.query(Order.date, Order.start_time, Order.end_time, StadiumCourt.name.label('stadium_court_name'), Stadium.name, Stadium.venue_name, Team.id.label('team_id')) \
                     .join(StadiumCourt, Order.stadium_court_id == StadiumCourt.id) \
                     .join(Stadium, Stadium.id == StadiumCourt.stadium_id) \
                     .join(Team, Order.id == Team.order_id) \
@@ -591,7 +586,7 @@ def update_stadium(
                     .all()
             for order_related_data in canceled_orders_related_data:
                 # get team member emails
-                member_emails = [] # TODO: call crud
+                member_emails = crud.team_member.get_all_team_member_email_by_team_id(db=db, team_id=order_related_data.team_id)
                 mail_content = '因租借場地之最大使用人數調降，隊伍人數超過場地之最大使用人數，<br>訂單已被取消！<br><br>訂單資訊：<br>日期：{}<br>時間：{}<br>地點：{}<br>' \
                         .format(str(order_related_data.date), 
                                 '{}:00-{}:00'.format(order_related_data.start_time, order_related_data.end_time), 
