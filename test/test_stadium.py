@@ -6,7 +6,6 @@ import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi import HTTPException
 from unittest.mock import patch
-from sqlalchemy.exc import SQLAlchemyError
 from app import crud
 from app.core.config import settings
 from .contest import db_conn, get_user_authentication_headers, test_client
