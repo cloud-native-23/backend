@@ -567,7 +567,7 @@ def update_stadium(
             for order_related_data in canceled_orders_related_data:
                 # get team member emails
                 member_emails = crud.team_member.get_all_team_member_email_by_team_id(db=db, team_id=order_related_data.team_id)
-                mail_content = '因租借場地已被下架<br>訂單已被取消！<br><br>訂單資訊：<br>日期：{}<br>時間：{}<br>地點：{}<br>' \
+                mail_content = '因租借場地已被下架，<br>訂單已被取消！<br><br>訂單資訊：<br>日期：{}<br>時間：{}<br>地點：{}<br>' \
                         .format(str(order_related_data.date), 
                                 '{}:00-{}:00'.format(order_related_data.start_time, order_related_data.end_time), 
                                 '{} {} {}'.format(order_related_data.name, order_related_data.venue_name, order_related_data.stadium_court_name))
@@ -587,7 +587,7 @@ def update_stadium(
             for order_related_data in canceled_orders_related_data:
                 # get team member emails
                 member_emails = crud.team_member.get_all_team_member_email_by_team_id(db=db, team_id=order_related_data.team_id)
-                mail_content = '因租借場地之最大使用人數調降，隊伍人數超過場地之最大使用人數，<br>訂單已被取消！<br><br>訂單資訊：<br>日期：{}<br>時間：{}<br>地點：{}<br>' \
+                mail_content = '因租借場地之最大使用人數調降，<br>隊伍人數超過場地之最大使用人數，<br>訂單已被取消！<br><br>訂單資訊：<br>日期：{}<br>時間：{}<br>地點：{}<br>' \
                         .format(str(order_related_data.date), 
                                 '{}:00-{}:00'.format(order_related_data.start_time, order_related_data.end_time), 
                                 '{} {} {}'.format(order_related_data.name, order_related_data.venue_name, order_related_data.stadium_court_name))
