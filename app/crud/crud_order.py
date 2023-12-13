@@ -84,7 +84,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             return('none_be_booked')
     
     def headcount_and_level_requirement_checking(
-        self, db: Session, *,  stadium_id: int, current_date: datetime, start_time: int, headcount:int, level_requirement:int
+        self, db: Session, *,  stadium_id: int, current_date: datetime, start_time: int, headcount:int, levels:list
     ):
         court_available_count = 0
         court_ids_subquery = (
@@ -108,7 +108,7 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
             if order:
                 if order.is_matching == True:
                     #has order and is_matching,  checking limit about headcount and level
-                    team = db.query(Team).filter(Team.order_id == order.id, Team.level_requirement<= level_requirement).first()
+                    team = db.query(Team).filter(Team.order_id == order.id, Team.level_requirement.in_(levels)).first()
                     if team:
                         if (team.max_number_of_member - team.current_member_number) >= headcount:
                             court_available_count = court_available_count+1

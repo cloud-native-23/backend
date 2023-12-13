@@ -11,6 +11,7 @@ from app import crud, models, schemas
 from app.core import security
 from app.core.config import settings
 from app.routers import deps
+from app.enums import LevelRequirement
 from app.email.send_email import send_email_background
 
 import traceback
@@ -23,8 +24,8 @@ router = APIRouter()
 def get_stadium_availability(
     stadium_id: int,
     query_date: str,
-    headcount:int,
-    level_requirement:int,
+    headcount: int,
+    level_requirement: str,
     db: Session = Depends(deps.get_db)
 ):
     try:
@@ -69,10 +70,10 @@ def get_stadium_availability(
                     booking_result = crud.order.is_booked(
                         db=db, stadium_id=stadium_id, date=current_date, start_time=start_time, end_time=end_time
                     )
+                    levels = [level.values[1] for level in LevelRequirement if level_requirement.upper() in level.name]
                     headcount_and_level_checking_result = crud.order.headcount_and_level_requirement_checking(
-                        db=db, stadium_id=stadium_id, current_date=current_date, start_time=start_time, headcount= headcount, level_requirement = level_requirement
+                        db=db, stadium_id=stadium_id, current_date=current_date, start_time=start_time, headcount= headcount, levels = levels
                     )
-
                     if booking_result == 'all_court_be_booked':
                         availability_data["day_{}".format(i + 1)][str(start_time)] = "Booked"
                     elif booking_result == 'none_be_booked':
