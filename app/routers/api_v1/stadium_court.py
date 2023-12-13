@@ -334,8 +334,3 @@ def join(
     except Exception as e:
         print('error >>> ', e)
         return {'message': 'fail. error: {}'.format(e)}
-    
-@router.get('/send-email/backgroundtasks')
-def send_email_backgroundtasks(background_tasks: BackgroundTasks):
-    send_email_background(background_tasks, 'Hello World', '已成功租借場地: 2023-12-12 16:-00-17:00 綜合體育館桌球室-D場', ['whatamath0626@gmail.com'])
-    return {'message': 'Success'}
