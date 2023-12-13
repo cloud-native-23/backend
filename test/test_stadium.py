@@ -755,7 +755,7 @@ def test_undisable_stadium_invalid_time(db_conn, test_client):
     response_data = response.json()
     assert response.json()["detail"] == "The undisable time is not valid."
 
-def test_undisable_stadium_already_disabled(db_conn, test_client):
+def test_undisable_stadium_not_disabled(db_conn, test_client):
 
     # Create test data for a stadium and its availability
 
