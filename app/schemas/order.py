@@ -22,7 +22,7 @@ class OrderBase(BaseModel):
 
 
 # Properties to receive via API on creation
-class OrderCreate(OrderBase):
+class OrderCreateInfo(OrderBase):
     stadium_court_id: int
     renter_id: int
     start_time: int = None
@@ -30,6 +30,15 @@ class OrderCreate(OrderBase):
     status: int = None
     is_matching: bool
     created_time = datetime
+    date: date
+
+class OrderCreate(BaseModel):
+    stadium_court_id: int
+    renter_id: int
+    start_time: int = None
+    end_time: int = None
+    status: int = None
+    is_matching: bool
     date: date
 
 
@@ -56,7 +65,7 @@ class OrderRentResponse(BaseModel):
 
 class OrderCancelResponse(BaseModel):
     message: str
-    order: OrderCreate
+    order: OrderCreateInfo
 
 class OrderCreateWithTeamInfo(BaseModel):
     stadium_court_id: int
