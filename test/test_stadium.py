@@ -806,3 +806,14 @@ def test_undisable_stadium_exception(db_conn, test_client):
     # Assert exception
     assert response.status_code == 400
     assert response.json()["detail"] == f"Fail to undisable stadium. Stadium ID: {stadium_id}, Date: {start_date}, Start Time: {start_time}"
+
+def test_get_stadium_availability(db_conn, test_client):
+    stadium_id = 1
+    query_date = "2023-11-15"
+    headcount = 2
+    level_requirement = 1
+    
+    response = test_client.post(
+        f"{settings.API_V1_STR}/stadium/timetable/?stadium_id={stadium_id}&query_date={query_date}&headcount={headcount}&level_requirement={level_requirement}"
+    )
+    assert response.status_code == 200
