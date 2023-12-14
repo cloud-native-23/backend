@@ -806,3 +806,91 @@ def test_undisable_stadium_exception(db_conn, test_client):
     # Assert exception
     assert response.status_code == 400
     assert response.json()["detail"] == f"Fail to undisable stadium. Stadium ID: {stadium_id}, Date: {start_date}, Start Time: {start_time}"
+
+def test_get_stadium_info_logged_in(db_conn, test_client):
+    email = "test1@gmail.com"
+    response = test_client.post(
+        f"{settings.API_V1_STR}/stadium/info?stadium_id=1",
+        headers=get_user_authentication_headers(db_conn, email),
+    )
+    response_data = response.json()["data"]
+    assert response.status_code == 200
+    assert response_data["id"] == 1
+    assert response_data["name"] == "綜合體育館"
+    assert response_data["venue_name"] == "桌球室"
+    assert response_data["address"] == "臺北市大安區羅斯福路四段1號"
+    assert response_data["picture"] == None
+    assert response_data["area"] == 906
+    assert response_data["description"] == "共6張球桌，可機動調整成集會場地/羽球場地(挑高：9公尺)"
+    assert response_data["created_user"] == 1
+    assert response_data["max_number_of_people"] == 4
+    assert response_data["google_map_url"] == None
+    assert len(response_data["stadium_courts"]) == 6
+    assert len(response_data["available_times"]["weekdays"]) == 5
+    assert response_data["available_times"]["start_time"] == 9
+    assert response_data["available_times"]["end_time"] == 19
+    assert response.json()["message"] == "success"
+
+def test_get_stadium_info_not_logged_in(db_conn, test_client):
+    email = "test1@gmail.com"
+    response = test_client.post(
+        f"{settings.API_V1_STR}/stadium/info?stadium_id=1",
+        # headers=get_user_authentication_headers(db_conn, email),
+    )
+    response_data = response.json()["data"]
+    assert response.status_code == 200
+    assert response_data["id"] == 1
+    assert response_data["name"] == "綜合體育館"
+    assert response_data["venue_name"] == "桌球室"
+    assert response_data["address"] == "臺北市大安區羅斯福路四段1號"
+    assert response_data["picture"] == None
+    assert response_data["area"] == 906
+    assert response_data["description"] == "共6張球桌，可機動調整成集會場地/羽球場地(挑高：9公尺)"
+    assert response_data["created_user"] == 1
+    assert response_data["max_number_of_people"] == 4
+    assert response_data["google_map_url"] == None
+    assert len(response_data["stadium_courts"]) == 6
+    assert len(response_data["available_times"]["weekdays"]) == 5
+    assert response_data["available_times"]["start_time"] == 9
+    assert response_data["available_times"]["end_time"] == 19
+    assert response.json()["message"] == "success"
+
+def test_get_stadium_info_stadium_not_exist_logged_in(db_conn, test_client):
+    email = "test1@gmail.com"
+    response = test_client.post(
+        f"{settings.API_V1_STR}/stadium/info?stadium_id=5",
+        headers=get_user_authentication_headers(db_conn, email),
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Fail to get stadium info. No stadium data with stadium_id = {}.".format(5)
+
+def test_get_stadium_info_stadium_not_exist_not_logged_in(db_conn, test_client):
+    email = "test1@gmail.com"
+    response = test_client.post(
+        f"{settings.API_V1_STR}/stadium/info?stadium_id=5",
+        # headers=get_user_authentication_headers(db_conn, email),
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Fail to get stadium info. No stadium data with stadium_id = {}.".format(5)
+
+def test_get_stadium_info_missing_param_logged_in(db_conn, test_client):
+    email = "test1@gmail.com"
+    response = test_client.post(
+        f"{settings.API_V1_STR}/stadium/info",
+        headers=get_user_authentication_headers(db_conn, email),
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] ==["query", "stadium_id"]
+    assert response.json()["detail"][0]["msg"] == "field required"
+    assert response.json()["detail"][0]["type"] == "value_error.missing"
+
+def test_get_stadium_info_missing_param_not_logged_in(db_conn, test_client):
+    email = "test1@gmail.com"
+    response = test_client.post(
+        f"{settings.API_V1_STR}/stadium/info",
+        # headers=get_user_authentication_headers(db_conn, email),
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] ==["query", "stadium_id"]
+    assert response.json()["detail"][0]["msg"] == "field required"
+    assert response.json()["detail"][0]["type"] == "value_error.missing"

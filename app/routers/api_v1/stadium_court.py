@@ -156,7 +156,13 @@ def rent(
         # convert level_requirement from str array to integer value
         level_requirement_value = 0
         if len(rent_obj_in.level_requirement) == 1:
-            level_requirement_value = LevelRequirement[rent_obj_in.level_requirement[0].upper()].values[1]
+            if rent_obj_in.level_requirement[0].upper() not in [level.name for level in LevelRequirement]:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Fail to rent stadium_court. Invalid level requirement. Only easy, medium, hard are valid values."
+                )
+            else:
+                level_requirement_value = LevelRequirement[rent_obj_in.level_requirement[0].upper()].values[1]
         elif len(rent_obj_in.level_requirement) == 3:
             level_requirement_value = LevelRequirement['EASY_MEDIUM_HARD'].values[1]
         else:
