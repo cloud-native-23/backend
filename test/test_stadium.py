@@ -894,3 +894,62 @@ def test_get_stadium_info_missing_param_not_logged_in(db_conn, test_client):
     assert response.json()["detail"][0]["loc"] ==["query", "stadium_id"]
     assert response.json()["detail"][0]["msg"] == "field required"
     assert response.json()["detail"][0]["type"] == "value_error.missing"
+
+def test_get_stadium_availability(db_conn, test_client):
+        # Prepare authentication and request data
+    #stadium 1
+    email = "test1@gmail.com"
+    # Prepare requset data
+    stadium_id = 1
+    query_date = "2023-11-14"
+    headcount = 3
+    level_requirement = "EASY"
+
+    # Make the POST request
+    with patch('app.crud.stadium_disable.delete_by_stadium_id_and_session', return_value=None):
+        response = test_client.post(
+                f"{settings.API_V1_STR}/stadium/timetable/?stadium_id={stadium_id}&query_date={query_date}&headcount={headcount}&level_requirement={level_requirement}",
+                headers=get_user_authentication_headers(db_conn, email),
+            )
+
+    # Assert exception
+    assert response.status_code == 200
+
+    stadium_id = 300000
+    with patch('app.crud.stadium_disable.delete_by_stadium_id_and_session', return_value=None):
+        response = test_client.post(
+                f"{settings.API_V1_STR}/stadium/timetable/?stadium_id={stadium_id}&query_date={query_date}&headcount={headcount}&level_requirement={level_requirement}",
+                headers=get_user_authentication_headers(db_conn, email),
+            )
+    assert response.status_code == 404
+
+
+def test_get_stadium_availability_for_provider(db_conn, test_client):
+        # Prepare authentication and request data
+    #stadium 1
+    email = "test1@gmail.com"
+    # Prepare requset data
+    stadium_id = 1
+    query_date = "2023-11-14"
+    headcount = 3
+    level_requirement = "EASY"
+
+    # Make the POST request
+    with patch('app.crud.stadium_disable.delete_by_stadium_id_and_session', return_value=None):
+        response = test_client.post(
+                f"{settings.API_V1_STR}/stadium/providertimetable/?stadium_id={stadium_id}&query_date={query_date}",
+                headers=get_user_authentication_headers(db_conn, email),
+            )
+
+    # Assert exception
+    assert response.status_code == 200
+
+    stadium_id = 300000
+    with patch('app.crud.stadium_disable.delete_by_stadium_id_and_session', return_value=None):
+        response = test_client.post(
+                f"{settings.API_V1_STR}/stadium/providertimetable/?stadium_id={stadium_id}&query_date={query_date}",
+                headers=get_user_authentication_headers(db_conn, email),
+            )
+    assert response.status_code == 404
+
+
