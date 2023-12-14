@@ -1123,52 +1123,6 @@ def test_update_stadium_add_new_court_logged_in(db_conn, test_client):
             db_conn.query(models.stadium_court.StadiumCourt).filter(models.stadium_court.StadiumCourt.id == stadium_court.id).delete()
     db_conn.commit()
 
-# def test_update_stadium_exception(db_conn, test_client):
-#     email = "cloudnativeg23@gmail.com"
-#     put_data = {
-#                    "id": 2,
-#                     "name": "新的體育館與戶外場地",
-#                     "venue_name": "新的新生籃球場",
-#                     "address": "新的臺北市大安區羅斯福路四段1號",
-#                     "picture": "test picture value",
-#                     "area": 9200, # 920
-#                     "description": "新的週一至六提供夜間照明至晚上10點，週日無提供夜間照明；遇雨或場地濕滑暫停使用",
-#                     "max_number_of_people": 10, # 12
-#                     "google_map_url": "https://www.google.com", # null
-#                     "stadium_courts": [
-#                         {
-#                             "id": 7,
-#                             "name": "新的A場"
-#                         },
-#                         {
-#                             "id": 8,
-#                             "name": "新的B場"
-#                         },
-#                         {
-#                             "id": 9,
-#                             "name": "新的C場"
-#                         },
-#                     ],
-#                     "available_times": {
-#                         "weekdays": [
-#                             1,2,3,4,5,6,7
-#                         ],
-#                         "start_time": 7, # 8 
-#                         "end_time": 23 # 22
-#                     }
-#     }
-#     # Mock the CRUD operation to raise an exception
-#     with patch('app.crud.stadium_court.get_all_by_stadium_id', side_effect=Exception("Simulated Failure")):
-#         response = test_client.put(
-#             f"{settings.API_V1_STR}/stadium",
-#             json=put_data,
-#             headers=get_user_authentication_headers(db_conn, email),
-#         )
-
-#     # Assert that an HTTPException with a 500 status code was raised
-#     assert response.status_code == 500
-#     assert "Simulated Failure" in response.json()["detail"]
-
 def test_get_stadium_availability(db_conn, test_client):
         # Prepare authentication and request data
     #stadium 1
