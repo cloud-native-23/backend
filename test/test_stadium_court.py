@@ -132,6 +132,26 @@ def test_get_rent_info_headcount_over_available_member_num_logged_in(db_conn, te
     assert response_data["status_description"] == "欲加入人數大於隊伍剩餘可加入人數"
     assert response.json()["message"] == "success"
 
+def test_get_rent_info_headcount_over_max_number_of_number_of_court_logged_in(db_conn, test_client):
+    email = "test1@gmail.com"
+    response = test_client.post(
+        f"{settings.API_V1_STR}/stadium-court/rent-info?stadium_id=2&date=2023-11-18&start_time=20&headcount=20&level_requirement=hard",
+        headers=get_user_authentication_headers(db_conn, email),
+    )
+    response_data = response.json()["data"][0]
+    assert response.status_code == 200
+    assert response_data["stadium_court_id"] == 7
+    assert response_data["name"] == "A場"
+    assert response_data["is_enabled"] == True
+    assert response_data["renter_name"] == None
+    assert response_data["team_id"] == None
+    assert response_data["current_member_number"] == None
+    assert response_data["max_number_of_member"] == None
+    assert response_data["level_requirement"] == None
+    assert response_data["status"] == "無法加入"
+    assert response_data["status_description"] == "欲加入人數大於場地最大人數"
+    assert response.json()["message"] == "success"
+
 def test_get_rent_info_not_logged_in(db_conn, test_client):
     email = "test1@gmail.com"
     response = test_client.post(
@@ -323,6 +343,29 @@ def test_rent_user_not_exist_not_logged_in(db_conn, test_client):
     )
     assert response.status_code == 401
     assert response.json()["detail"] == "Not authenticated"
+
+def test_rent_invalid_level_requirement_logged_in(db_conn, test_client):
+    email = "test1@gmail.com"
+    post_data = {
+                    "stadium_court_id": 1,
+                    "date": "2023-11-15",
+                    "start_time": 20,
+                    "end_time": 21,
+                    "current_member_number": 2,
+                    "max_number_of_member": 4,
+                    "is_matching": True,
+                    "level_requirement": ["HAHAHIHIHOHO"],
+                    "team_member_emails": [
+                        "test12@gmail.com"
+                    ]
+                }
+    response = test_client.post(
+        f"{settings.API_V1_STR}/stadium-court/rent",
+        json=post_data,
+        headers=get_user_authentication_headers(db_conn, email),
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Fail to rent stadium_court. Invalid level requirement. Only easy, medium, hard are valid values."
 
 def test_join_logged_in(db_conn, test_client):
     email = "test1@gmail.com"
