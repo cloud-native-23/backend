@@ -6,7 +6,7 @@ import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi import HTTPException
 from unittest.mock import patch
-from app import crud
+from app import crud, models
 from app.core.config import settings
 from .contest import db_conn, get_user_authentication_headers, test_client
 
@@ -895,6 +895,234 @@ def test_get_stadium_info_missing_param_not_logged_in(db_conn, test_client):
     assert response.json()["detail"][0]["msg"] == "field required"
     assert response.json()["detail"][0]["type"] == "value_error.missing"
 
+def test_update_stadium_logged_in(db_conn, test_client):
+    email = "cloudnativeg23@gmail.com"
+    put_data = {
+                   "id": 2,
+                    "name": "新的體育館與戶外場地",
+                    "venue_name": "新的新生籃球場",
+                    "address": "新的臺北市大安區羅斯福路四段1號",
+                    "picture": "test picture value",
+                    "area": 9200, # 920
+                    "description": "新的週一至六提供夜間照明至晚上10點，週日無提供夜間照明；遇雨或場地濕滑暫停使用",
+                    "max_number_of_people": 10, # 12
+                    "google_map_url": "https://www.google.com", # null
+                    "stadium_courts": [
+                        {
+                            "id": 7,
+                            "name": "新的A場"
+                        },
+                        {
+                            "id": 8,
+                            "name": "新的B場"
+                        },
+                        {
+                            "id": 9,
+                            "name": "新的C場"
+                        },
+                    ],
+                    "available_times": {
+                        "weekdays": [
+                            1,2,3,4,5,6,7
+                        ],
+                        "start_time": 7, # 8 
+                        "end_time": 23 # 22
+                    }
+    }
+    response = test_client.put(
+        f"{settings.API_V1_STR}/stadium",
+        json=put_data,
+        headers=get_user_authentication_headers(db_conn, email)
+    )
+    response_data = response.json()["data"]
+    assert response.status_code == 200
+    assert response_data["name"] == put_data["name"]
+    assert response_data["venue_name"] == put_data["venue_name"]
+    assert response_data["address"] == put_data["address"]
+    assert response_data["picture"] == put_data["picture"]
+    assert response_data["area"] == put_data["area"]
+    assert response_data["description"] == put_data["description"]
+    assert response_data["max_number_of_people"] == put_data["max_number_of_people"]
+    assert response_data["google_map_url"] == put_data["google_map_url"]
+    for idx, court in enumerate(response_data["stadium_courts"]):
+        assert court["name"] == put_data["stadium_courts"][idx]["name"]
+    assert response_data["available_times"]["weekdays"] == put_data["available_times"]["weekdays"]
+    assert response_data["available_times"]["start_time"] == put_data["available_times"]["start_time"]
+    assert response_data["available_times"]["end_time"] == put_data["available_times"]["end_time"]
+    assert response.json()["message"] == "success"
+    # update updated data with original value
+    # stadium
+    stadium_obj = crud.stadium.get_by_stadium_id(db=db_conn, stadium_id=put_data["id"])
+    stadium_obj.name = "體育館與戶外場地"
+    stadium_obj.venue_name = "新生籃球場"
+    stadium_obj.address = "臺北市大安區羅斯福路四段1號"
+    stadium_obj.picture = None
+    stadium_obj.area = 920
+    stadium_obj.description = "週一至六提供夜間照明至晚上10點，週日無提供夜間照明；遇雨或場地濕滑暫停使用"
+    stadium_obj.max_number_of_people = 10
+    stadium_obj.google_map_url = None
+    db_conn.add(stadium_obj)
+    # stadium_court
+    stadium_court_objs = db_conn.query(models.stadium_court.StadiumCourt).filter(models.stadium_court.StadiumCourt.stadium_id == put_data["id"]).all()
+    for stadium_court in stadium_court_objs:
+        stadium_court.name = stadium_court.name[2:]
+        db_conn.add(stadium_court)
+    # delete all first
+    db_conn.query(models.stadium_available_time.StadiumAvailableTime).filter(models.stadium_available_time.StadiumAvailableTime.stadium_id == put_data["id"]).delete()
+    # create new available_times
+    for weekday in put_data["available_times"]["weekdays"]:
+        create_available_time = models.stadium_available_time.StadiumAvailableTime(
+            stadium_id = put_data["id"],
+            weekday = weekday,
+            start_time = put_data["available_times"]["start_time"],
+            end_time = put_data["available_times"]["end_time"]
+        )
+        db_conn.add(create_available_time)
+    db_conn.commit()
+
+def test_update_stadium_not_logged_in(db_conn, test_client):
+    email = "cloudnativeg23@gmail.com"
+    put_data = {
+                    "id": 2,
+                    "name": "新的體育館與戶外場地",
+                    "venue_name": "新的新生籃球場",
+                    "address": "新的臺北市大安區羅斯福路四段1號",
+                    "picture": "test picture value",
+                    "area": 9200, # 920
+                    "description": "新的週一至六提供夜間照明至晚上10點，週日無提供夜間照明；遇雨或場地濕滑暫停使用",
+                    "max_number_of_people": 10, # 12
+                    "google_map_url": "https://www.google.com", # null
+                    "stadium_courts": [
+                        {
+                            "id": 7,
+                            "name": "新的A場"
+                        },
+                        {
+                            "id": 8,
+                            "name": "新的B場"
+                        },
+                        {
+                            "id": 9,
+                            "name": "新的C場"
+                        },
+                    ],
+                    "available_times": {
+                        "weekdays": [
+                            1,2,3,4,5,6,7
+                        ],
+                        "start_time": 7, # 8 
+                        "end_time": 23 # 22
+                    }
+    }
+    response = test_client.put(
+        f"{settings.API_V1_STR}/stadium",
+        json=put_data,
+        # headers=get_user_authentication_headers(db_conn, email)
+    )
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+def test_update_stadium_stadium_not_exist_logged_in(db_conn, test_client):
+    email = "cloudnativeg23@gmail.com"
+    put_data = {
+                   "id": 100,
+                    "name": "新的體育館與戶外場地",
+                    "venue_name": "新的新生籃球場",
+                    "address": "新的臺北市大安區羅斯福路四段1號",
+                    "picture": "test picture value",
+                    "area": 9200, # 920
+                    "description": "新的週一至六提供夜間照明至晚上10點，週日無提供夜間照明；遇雨或場地濕滑暫停使用",
+                    "max_number_of_people": 10, # 12
+                    "google_map_url": "https://www.google.com", # null
+                    "stadium_courts": [
+                        {
+                            "id": 7,
+                            "name": "新的A場"
+                        },
+                        {
+                            "id": 8,
+                            "name": "新的B場"
+                        },
+                        {
+                            "id": 9,
+                            "name": "新的C場"
+                        },
+                    ],
+                    "available_times": {
+                        "weekdays": [
+                            1,2,3,4,5,6,7
+                        ],
+                        "start_time": 7, # 8 
+                        "end_time": 23 # 22
+                    }
+    }
+    response = test_client.put(
+        f"{settings.API_V1_STR}/stadium",
+        json=put_data,
+        headers=get_user_authentication_headers(db_conn, email)
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Fail to update stadium. No stadium data with stadium_id = {}.".format(put_data["id"])
+
+def test_update_stadium_add_new_court_logged_in(db_conn, test_client):
+    email = "cloudnativeg23@gmail.com"
+    put_data = {
+                   "id": 2,
+                    "name": "體育館與戶外場地",
+                    "venue_name": "新生籃球場",
+                    "max_number_of_people": 12,
+                    "stadium_courts": [
+                        {
+                            "id": 7,
+                            "name": "A場"
+                        },
+                        {
+                            "id": 8,
+                            "name": "B場"
+                        },
+                        {
+                            "id": 9,
+                            "name": "C場"
+                        },
+                        {
+                            "name": "D場"
+                        }
+                    ],
+                    "available_times": {
+                        "weekdays": [
+                            1,2,3,4,5,6,7
+                        ],
+                        "start_time": 8,
+                        "end_time": 22
+                    }
+    }
+    response = test_client.put(
+        f"{settings.API_V1_STR}/stadium",
+        json=put_data,
+        headers=get_user_authentication_headers(db_conn, email)
+    )
+    response_data = response.json()["data"]
+    assert response.status_code == 200
+    assert response_data["name"] == put_data["name"]
+    assert response_data["venue_name"] == put_data["venue_name"]
+    assert response_data["max_number_of_people"] == put_data["max_number_of_people"]
+    for idx, court in enumerate(response_data["stadium_courts"]):
+        assert court["name"] == put_data["stadium_courts"][idx]["name"]
+    assert response_data["available_times"]["weekdays"] == put_data["available_times"]["weekdays"]
+    assert response_data["available_times"]["start_time"] == put_data["available_times"]["start_time"]
+    assert response_data["available_times"]["end_time"] == put_data["available_times"]["end_time"]
+    assert response.json()["message"] == "success"
+    # update updated data with original value
+    # stadium_court
+    stadium_court_objs = db_conn.query(models.stadium_court.StadiumCourt).filter(models.stadium_court.StadiumCourt.stadium_id == put_data["id"]).all()
+    # temp = [x for x in put_data["stadium_courts"]]
+    # print('temp >>> ', temp)
+    orig_stadium_court_ids = [x["id"] for x in put_data["stadium_courts"] if "id" in x.keys()]
+    for stadium_court in stadium_court_objs:
+        if stadium_court.id not in orig_stadium_court_ids:
+            db_conn.query(models.stadium_court.StadiumCourt).filter(models.stadium_court.StadiumCourt.id == stadium_court.id).delete()
+    db_conn.commit()
+
 def test_get_stadium_availability(db_conn, test_client):
         # Prepare authentication and request data
     #stadium 1
@@ -951,5 +1179,3 @@ def test_get_stadium_availability_for_provider(db_conn, test_client):
                 headers=get_user_authentication_headers(db_conn, email),
             )
     assert response.status_code == 404
-
-
