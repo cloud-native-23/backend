@@ -59,6 +59,7 @@ def get_rent_info(
             .filter(StadiumCourt.id == stadium_court.id) \
             .filter(Order.start_time == start_time) \
             .filter(Order.date == date) \
+            .filter(Order.status != 0)
             # .filter(Order.is_matching == True)
             # .filter(Team.level_requirement <= level_requirement)
             # .filter(Team.max_number_of_member-Team.current_member_number >= headcount)
