@@ -30,12 +30,11 @@ class CRUDOrder(CRUDBase[Order, OrderCreate, OrderUpdate]):
         db_obj = Order(
             stadium_court_id = obj_in.stadium_court_id,
             renter_id = obj_in.renter_id,
-            datetime = obj_in.datetime,
+            date = obj_in.date,
             start_time = obj_in.start_time,
             end_time = obj_in.end_time,
             status = obj_in.status,
             is_matching = obj_in.is_matching,
-            created_time = obj_in.created_time
         )
         db.add(db_obj)
         db.commit()
