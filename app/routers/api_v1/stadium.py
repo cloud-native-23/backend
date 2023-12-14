@@ -232,11 +232,6 @@ def get_stadium(
     """
     Retrieve stadium info with stadium_id.
     """
-    if stadium_id is None:
-        raise HTTPException(
-            status_code=400,
-            detail="Fail to get stadium info. Missing parameter: stadium_id.",
-        )
     stadium = crud.stadium.get_by_stadium_id(db=db, stadium_id=stadium_id)
     if stadium is None:
         raise HTTPException(
