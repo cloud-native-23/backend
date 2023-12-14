@@ -1,22 +1,50 @@
-# import httpx
-# import loguru
-# import pytest
-# from fastapi.encoders import jsonable_encoder
-# from google.auth.transport import requests
-# from google.oauth2 import id_token
+import httpx
+import loguru
+import pytest
+from fastapi.encoders import jsonable_encoder
+from google.auth.transport import requests
+from google.oauth2 import id_token
 
-# from app import crud
-# from app.core.config import settings
+from app import crud
+from app.core.config import settings
 
-# from .contest import db_conn, test_client
+from .contest import db_conn, get_user_authentication_headers, test_client
 
-# client = httpx.AsyncClient()
+client = httpx.AsyncClient()
 
-# # pytest fixture
-# db_conn = db_conn
-# test_client = test_client
+# pytest fixture
+db_conn = db_conn
+test_client = test_client
 
 
+def test_google_auth(db_conn, test_client):
+
+    response = test_client.post(
+        f"{settings.API_V1_STR}/auth/sso-login/",
+        headers={"accept": "application/json", "Content-Type": "application/json"},
+        json={
+            "name": "王小明",
+            "email": "test1@gmail.com"
+        }
+    )
+
+    assert response.status_code == 200
+
+
+def test_google_auth_new_user(db_conn, test_client):
+    # Assuming there is no user with the email "newuser@gmail.com" in the database
+    response = test_client.post(
+        f"{settings.API_V1_STR}/auth/sso-login/",
+        headers={"accept": "application/json", "Content-Type": "application/json"},
+        json={
+            "name": "New User",
+            "email": "newuser@gmail.com"
+        }
+    )
+
+    assert response.status_code == 200
+
+    
 # @pytest.fixture(scope="module")
 # def get_server_api():
 #     server_name = "http://localhost:8000"
